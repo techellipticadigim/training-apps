@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Visualization - Collection Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Index</a>
+            <h1>🚶 Queue</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>Input</h3>
+                    <div class="input-group">
+                        <label for="inputValue">Value</label>
+                        <input type="text" id="inputValue" placeholder="e.g., 1">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Operations</h3>
+                    <div class="operations" id="operations"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Examples</h3>
+                    <div class="examples" id="examples"></div>
+                </div>
+            </div>
+
+            <div class="visualization-area" id="visualization"></div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script>
+        class QueueVisualizer extends BaseVisualizer {
+            constructor() {
+                super();
+                this.queue = [];
+                this.front = 0;
+                this.rear = -1;
+            }
+
+            getOperations() {
+                return [
+                    { name: 'enqueue', label: 'Enqueue', type: 'primary' },
+                    { name: 'dequeue', label: 'Dequeue', type: 'danger' },
+                    { name: 'peek', label: 'Peek', type: 'success' },
+                    { name: 'clear', label: 'Clear', type: 'secondary' }
+                ];
+            }
+
+            getExamples() {
+                return [
+                    { label: '1,2,3', data: [1, 2, 3] },
+                    { label: 'A,B,C', data: ['A', 'B', 'C'] }
+                ];
+            }
+
+            executeOperation(op, values, key) {
+                if (op === 'enqueue' && values.length > 0) {
+                    values.forEach(v => {
+                        this.queue.push(v);
+                        this.rear++;
+                    });
+                } else if (op === 'dequeue') {
+                    if (this.queue.length > 0) {
+                        const dequeued = this.queue.shift();
+                        this.rear--;
+                        alert(`Dequeued: ${dequeued}`);
+                    } else {
+                        alert('Queue is empty');
+                    }
+                } else if (op === 'peek') {
+                    if (this.queue.length > 0) {
+                        alert(`Front: ${this.queue[0]}`);
+                    } else {
+                        alert('Queue is empty');
+                    }
+                } else if (op === 'clear') {
+                    this.queue = [];
+                    this.front = 0;
+                    this.rear = -1;
+                }
+                this.render();
+            }
+
+            render() {
+                const container = document.getElementById('visualization');
+                container.innerHTML = `
+                    <div class="description">
+                        <strong>Queue:</strong> FIFO (First In First Out) data structure. Elements are added at rear and removed from front.
+                        <br>Size: ${this.queue.length}, Front: ${this.front}, Rear: ${this.rear}
+                    </div>
+                    <div class="stack-queue-container" id="queueViz">
+                        <div style="text-align:center;margin-bottom:10px;">
+                            <span style="font-weight:600">FRONT →</span>
+                            <span style="margin:0 20px">|</span>
+                            <span style="font-weight:600">← REAR</span>
+                        </div>
+                    </div>
+                    ${this.renderComplexity([
+                        { operation: 'Enqueue', complexity: 'O(1)' },
+                        { operation: 'Dequeue', complexity: 'O(1)' },
+                        { operation: 'Peek', complexity: 'O(1)' }
+                    ])}
+                    ${this.renderCodeSnippet('JavaScript', `// Queue implementation
+class Queue {
+    constructor() {
+        this.items = [];
+    }
+    
+    enqueue(item) {
+        this.items.push(item); // O(1)
+    }
+    
+    dequeue() {
+        return this.items.shift(); // O(n) - can be O(1) with circular buffer
+    }
+    
+    peek() {
+        return this.items[0]; // O(1)
+    }
+}`)}
+                `;
+
+                const vizContainer = document.getElementById('queueViz');
+                
+                if (this.queue.length === 0) {
+                    vizContainer.innerHTML += '<div class="null-marker">Queue is empty</div>';
+                } else {
+                    this.queue.forEach((item, index) => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'queue-item';
+                        if (index === 0) {
+                            itemDiv.classList.add('active');
+                        }
+                        itemDiv.textContent = item;
+                        vizContainer.appendChild(itemDiv);
+                    });
+                }
+            }
+        }
+
+        const visualizer = new QueueVisualizer();
+        visualizer.render();
+
+        function setupOperations() {
+            const opsContainer = document.getElementById('operations');
+            opsContainer.innerHTML = '';
+            visualizer.getOperations().forEach(op => {
+                const btn = document.createElement('button');
+                btn.className = `btn btn-${op.type || 'primary'}`;
+                btn.textContent = op.label;
+                btn.onclick = () => {
+                    const inputValue = document.getElementById('inputValue').value;
+                    const values = parseInput(inputValue, 'number');
+                    if (values.length === 0 && !['dequeue', 'peek', 'clear'].includes(op.name)) {
+                        alert('Please enter a value');
+                        return;
+                    }
+                    visualizer.executeOperation(op.name, values);
+                };
+                opsContainer.appendChild(btn);
+            });
+        }
+
+        function setupExamples() {
+            const examplesContainer = document.getElementById('examples');
+            examplesContainer.innerHTML = '';
+            visualizer.getExamples().forEach(example => {
+                const btn = document.createElement('button');
+                btn.className = 'example-btn';
+                btn.textContent = example.label;
+                btn.onclick = () => {
+                    example.data.forEach(v => {
+                        document.getElementById('inputValue').value = v;
+                        visualizer.executeOperation('enqueue', [v]);
+                    });
+                };
+                examplesContainer.appendChild(btn);
+            });
+        }
+
+        setupOperations();
+        setupExamples();
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const btn = document.querySelector('.theme-toggle');
+            if (btn) {
+                btn.textContent = document.body.getAttribute('data-theme') === 'dark' 
+                    ? '☀️ Light Mode' 
+                    : '🌙 Dark Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeButton();
+        });
+    </script>
+</body>
+</html>
+

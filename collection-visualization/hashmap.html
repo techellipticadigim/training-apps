@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HashMap Visualization - Collection Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Index</a>
+            <h1>🗺️ HashMap</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>Input</h3>
+                    <div class="input-group">
+                        <label for="inputKey">Key</label>
+                        <input type="text" id="inputKey" placeholder="e.g., name">
+                    </div>
+                    <div class="input-group">
+                        <label for="inputValue">Value</label>
+                        <input type="text" id="inputValue" placeholder="e.g., John">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Operations</h3>
+                    <div class="operations" id="operations"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>View Options</h3>
+                    <div class="memory-toggle">
+                        <label>
+                            <input type="checkbox" id="showMemory" onchange="visualizer.toggleMemoryView()">
+                            Show Memory View
+                        </label>
+                    </div>
+                    <div class="memory-toggle">
+                        <label>
+                            <input type="checkbox" id="showDetails" onchange="visualizer.toggleDetails()">
+                            Show Hash Computation
+                        </label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Examples</h3>
+                    <div class="examples" id="examples"></div>
+                </div>
+            </div>
+
+            <div class="visualization-area" id="visualization"></div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script>
+        class HashMapVisualizer extends BaseVisualizer {
+            constructor() {
+                super();
+                this.capacity = 16;
+                this.loadFactor = 0.75;
+                this.buckets = Array(this.capacity).fill(null).map(() => []);
+                this.size = 0;
+                this.showMemory = false;
+                this.showDetails = false;
+            }
+
+            getOperations() {
+                return [
+                    { name: 'put', label: 'Put (Add)', type: 'primary' },
+                    { name: 'get', label: 'Get', type: 'success' },
+                    { name: 'remove', label: 'Remove', type: 'danger' },
+                    { name: 'clear', label: 'Clear', type: 'secondary' }
+                ];
+            }
+
+            getExamples() {
+                return [
+                    { label: 'name:John', data: { key: 'name', value: 'John' } },
+                    { label: 'age:25', data: { key: 'age', value: '25' } }
+                ];
+            }
+
+            hash(key) {
+                if (typeof key === 'number') return hashNumber(key, this.capacity);
+                return hashString(key, this.capacity);
+            }
+
+            executeOperation(op, values, key) {
+                const inputKey = document.getElementById('inputKey').value;
+                const inputValue = document.getElementById('inputValue').value;
+                
+                if (op === 'put' && inputKey && inputValue) {
+                    const hashValue = this.hash(inputKey);
+                    const bucket = this.buckets[hashValue];
+                    
+                    // Check if key exists
+                    const existing = bucket.findIndex(entry => entry.key === inputKey);
+                    if (existing >= 0) {
+                        bucket[existing].value = inputValue;
+                    } else {
+                        bucket.push({ key: inputKey, value: inputValue, hash: hashValue });
+                        this.size++;
+                    }
+                    
+                    // Check if rehashing needed
+                    if (this.size > this.capacity * this.loadFactor) {
+                        this.rehash();
+                    }
+                } else if (op === 'get' && inputKey) {
+                    const hashValue = this.hash(inputKey);
+                    const bucket = this.buckets[hashValue];
+                    const entry = bucket.find(e => e.key === inputKey);
+                    if (entry) {
+                        alert(`Found: ${entry.value}`);
+                    } else {
+                        alert('Key not found');
+                    }
+                } else if (op === 'remove' && inputKey) {
+                    const hashValue = this.hash(inputKey);
+                    const bucket = this.buckets[hashValue];
+                    const index = bucket.findIndex(e => e.key === inputKey);
+                    if (index >= 0) {
+                        bucket.splice(index, 1);
+                        this.size--;
+                    }
+                } else if (op === 'clear') {
+                    this.buckets = Array(this.capacity).fill(null).map(() => []);
+                    this.size = 0;
+                }
+                this.render();
+            }
+
+            rehash() {
+                const oldBuckets = this.buckets;
+                this.capacity *= 2;
+                this.buckets = Array(this.capacity).fill(null).map(() => []);
+                this.size = 0;
+                
+                oldBuckets.forEach(bucket => {
+                    bucket.forEach(entry => {
+                        const newHash = this.hash(entry.key);
+                        this.buckets[newHash].push({ ...entry, hash: newHash });
+                        this.size++;
+                    });
+                });
+                
+                if (this.showDetails) {
+                    alert(`Rehashed! New capacity: ${this.capacity}`);
+                }
+            }
+
+            toggleMemoryView() {
+                this.showMemory = document.getElementById('showMemory').checked;
+                this.render();
+            }
+
+            toggleDetails() {
+                this.showDetails = document.getElementById('showDetails').checked;
+                this.render();
+            }
+
+            render() {
+                const container = document.getElementById('visualization');
+                container.innerHTML = `
+                    <div class="description">
+                        <strong>HashMap:</strong> Key-value pairs stored in hash buckets. Uses chaining for collision resolution.
+                        <br>Size: ${this.size}, Capacity: ${this.capacity}, Load Factor: ${this.loadFactor}
+                        ${this.showDetails ? `<br>Threshold: ${Math.floor(this.capacity * this.loadFactor)}` : ''}
+                    </div>
+                    <div class="hash-container" id="hashViz"></div>
+                    ${this.showMemory ? this.renderMemoryView([
+                        `Bucket array base: 0x3000`,
+                        `Each bucket: pointer (8 bytes) to chain`,
+                        `Each entry: key (8 bytes) + value (8 bytes) + next pointer (8 bytes)`
+                    ]) : ''}
+                    ${this.renderComplexity([
+                        { operation: 'Put (average)', complexity: 'O(1)' },
+                        { operation: 'Put (worst)', complexity: 'O(n) - rehash' },
+                        { operation: 'Get (average)', complexity: 'O(1)' },
+                        { operation: 'Get (worst)', complexity: 'O(n) - all in one bucket' }
+                    ])}
+                    ${this.renderCodeSnippet('JavaScript', `// HashMap with chaining
+class HashMap {
+    constructor(capacity = 16, loadFactor = 0.75) {
+        this.buckets = Array(capacity).fill(null).map(() => []);
+        this.capacity = capacity;
+        this.loadFactor = loadFactor;
+        this.size = 0;
+    }
+    
+    hash(key) {
+        let hash = 0;
+        for (let i = 0; i < key.length; i++) {
+            hash = ((hash << 5) - hash) + key.charCodeAt(i);
+            hash = hash & hash;
+        }
+        return Math.abs(hash) % this.capacity;
+    }
+    
+    put(key, value) {
+        const hash = this.hash(key);
+        const bucket = this.buckets[hash];
+        const existing = bucket.findIndex(e => e.key === key);
+        if (existing >= 0) {
+            bucket[existing].value = value;
+        } else {
+            bucket.push({ key, value });
+            this.size++;
+            if (this.size > this.capacity * this.loadFactor) {
+                this.rehash();
+            }
+        }
+    }
+}`)}
+                `;
+
+                const vizContainer = document.getElementById('hashViz');
+                vizContainer.innerHTML = '<div class="bucket-array" id="buckets"></div>';
+                
+                const bucketsContainer = document.getElementById('buckets');
+                this.buckets.forEach((bucket, index) => {
+                    const bucketDiv = document.createElement('div');
+                    bucketDiv.className = 'bucket';
+                    bucketDiv.innerHTML = `
+                        <div class="bucket-index">Bucket ${index}</div>
+                        <div class="bucket-chain" id="chain-${index}"></div>
+                    `;
+                    bucketsContainer.appendChild(bucketDiv);
+                    
+                    const chainContainer = document.getElementById(`chain-${index}`);
+                    if (bucket.length === 0) {
+                        chainContainer.innerHTML = '<div class="null-marker" style="font-size:0.8rem">empty</div>';
+                    } else {
+                        bucket.forEach((entry, idx) => {
+                            const node = document.createElement('div');
+                            node.className = 'bucket-node';
+                            if (this.showDetails) {
+                                node.innerHTML = `
+                                    <div class="key">${entry.key}</div>
+                                    <div class="value">${entry.value}</div>
+                                    <div style="font-size:0.7rem;color:var(--memory-addr)">hash: ${entry.hash}</div>
+                                `;
+                            } else {
+                                node.innerHTML = `
+                                    <div class="key">${entry.key}</div>
+                                    <div class="value">${entry.value}</div>
+                                `;
+                            }
+                            chainContainer.appendChild(node);
+                            if (idx < bucket.length - 1) {
+                                const arrow = document.createElement('div');
+                                arrow.className = 'arrow';
+                                arrow.style.transform = 'rotate(90deg)';
+                                arrow.style.margin = '4px 0';
+                                chainContainer.appendChild(arrow);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        const visualizer = new HashMapVisualizer();
+        visualizer.render();
+
+        function setupOperations() {
+            const opsContainer = document.getElementById('operations');
+            opsContainer.innerHTML = '';
+            visualizer.getOperations().forEach(op => {
+                const btn = document.createElement('button');
+                btn.className = `btn btn-${op.type || 'primary'}`;
+                btn.textContent = op.label;
+                btn.onclick = () => visualizer.executeOperation(op.name);
+                opsContainer.appendChild(btn);
+            });
+        }
+
+        function setupExamples() {
+            const examplesContainer = document.getElementById('examples');
+            examplesContainer.innerHTML = '';
+            visualizer.getExamples().forEach(example => {
+                const btn = document.createElement('button');
+                btn.className = 'example-btn';
+                btn.textContent = example.label;
+                btn.onclick = () => {
+                    document.getElementById('inputKey').value = example.data.key;
+                    document.getElementById('inputValue').value = example.data.value;
+                };
+                examplesContainer.appendChild(btn);
+            });
+        }
+
+        setupOperations();
+        setupExamples();
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const btn = document.querySelector('.theme-toggle');
+            if (btn) {
+                btn.textContent = document.body.getAttribute('data-theme') === 'dark' 
+                    ? '☀️ Light Mode' 
+                    : '🌙 Dark Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeButton();
+        });
+    </script>
+</body>
+</html>
+

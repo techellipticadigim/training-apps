@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Visualization - Collection Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Index</a>
+            <h1>📚 Stack</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>Input</h3>
+                    <div class="input-group">
+                        <label for="inputValue">Value</label>
+                        <input type="text" id="inputValue" placeholder="e.g., 1">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Operations</h3>
+                    <div class="operations" id="operations"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Examples</h3>
+                    <div class="examples" id="examples"></div>
+                </div>
+            </div>
+
+            <div class="visualization-area" id="visualization"></div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script>
+        class StackVisualizer extends BaseVisualizer {
+            constructor() {
+                super();
+                this.stack = [];
+                this.top = -1;
+            }
+
+            getOperations() {
+                return [
+                    { name: 'push', label: 'Push', type: 'primary' },
+                    { name: 'pop', label: 'Pop', type: 'danger' },
+                    { name: 'peek', label: 'Peek', type: 'success' },
+                    { name: 'clear', label: 'Clear', type: 'secondary' }
+                ];
+            }
+
+            getExamples() {
+                return [
+                    { label: '1,2,3', data: [1, 2, 3] },
+                    { label: 'A,B,C', data: ['A', 'B', 'C'] }
+                ];
+            }
+
+            executeOperation(op, values, key) {
+                if (op === 'push' && values.length > 0) {
+                    values.forEach(v => {
+                        this.stack.push(v);
+                        this.top++;
+                    });
+                } else if (op === 'pop') {
+                    if (this.stack.length > 0) {
+                        const popped = this.stack.pop();
+                        this.top--;
+                        alert(`Popped: ${popped}`);
+                    } else {
+                        alert('Stack is empty');
+                    }
+                } else if (op === 'peek') {
+                    if (this.stack.length > 0) {
+                        alert(`Top: ${this.stack[this.stack.length - 1]}`);
+                    } else {
+                        alert('Stack is empty');
+                    }
+                } else if (op === 'clear') {
+                    this.stack = [];
+                    this.top = -1;
+                }
+                this.render();
+            }
+
+            render() {
+                const container = document.getElementById('visualization');
+                container.innerHTML = `
+                    <div class="description">
+                        <strong>Stack:</strong> LIFO (Last In First Out) data structure. Elements are added and removed from the top.
+                        <br>Size: ${this.stack.length}, Top index: ${this.top}
+                    </div>
+                    <div class="stack-queue-container" id="stackViz"></div>
+                    ${this.renderComplexity([
+                        { operation: 'Push', complexity: 'O(1)' },
+                        { operation: 'Pop', complexity: 'O(1)' },
+                        { operation: 'Peek', complexity: 'O(1)' }
+                    ])}
+                    ${this.renderCodeSnippet('JavaScript', `// Stack implementation
+class Stack {
+    constructor() {
+        this.items = [];
+    }
+    
+    push(item) {
+        this.items.push(item); // O(1)
+    }
+    
+    pop() {
+        return this.items.pop(); // O(1)
+    }
+    
+    peek() {
+        return this.items[this.items.length - 1]; // O(1)
+    }
+}`)}
+                `;
+
+                const vizContainer = document.getElementById('stackViz');
+                vizContainer.innerHTML = '<div style="text-align:center;margin-bottom:10px;font-weight:600">TOP →</div>';
+                
+                if (this.stack.length === 0) {
+                    vizContainer.innerHTML += '<div class="null-marker">Stack is empty</div>';
+                } else {
+                    for (let i = this.stack.length - 1; i >= 0; i--) {
+                        const item = document.createElement('div');
+                        item.className = 'stack-item';
+                        if (i === this.top) {
+                            item.classList.add('active');
+                        }
+                        item.textContent = this.stack[i];
+                        vizContainer.appendChild(item);
+                    }
+                }
+            }
+        }
+
+        const visualizer = new StackVisualizer();
+        visualizer.render();
+
+        function setupOperations() {
+            const opsContainer = document.getElementById('operations');
+            opsContainer.innerHTML = '';
+            visualizer.getOperations().forEach(op => {
+                const btn = document.createElement('button');
+                btn.className = `btn btn-${op.type || 'primary'}`;
+                btn.textContent = op.label;
+                btn.onclick = () => {
+                    const inputValue = document.getElementById('inputValue').value;
+                    const values = parseInput(inputValue, 'number');
+                    if (values.length === 0 && !['pop', 'peek', 'clear'].includes(op.name)) {
+                        alert('Please enter a value');
+                        return;
+                    }
+                    visualizer.executeOperation(op.name, values);
+                };
+                opsContainer.appendChild(btn);
+            });
+        }
+
+        function setupExamples() {
+            const examplesContainer = document.getElementById('examples');
+            examplesContainer.innerHTML = '';
+            visualizer.getExamples().forEach(example => {
+                const btn = document.createElement('button');
+                btn.className = 'example-btn';
+                btn.textContent = example.label;
+                btn.onclick = () => {
+                    example.data.forEach(v => {
+                        document.getElementById('inputValue').value = v;
+                        visualizer.executeOperation('push', [v]);
+                    });
+                };
+                examplesContainer.appendChild(btn);
+            });
+        }
+
+        setupOperations();
+        setupExamples();
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const btn = document.querySelector('.theme-toggle');
+            if (btn) {
+                btn.textContent = document.body.getAttribute('data-theme') === 'dark' 
+                    ? '☀️ Light Mode' 
+                    : '🌙 Dark Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeButton();
+        });
+    </script>
+</body>
+</html>
+

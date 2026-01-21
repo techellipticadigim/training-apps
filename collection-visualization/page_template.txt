@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}} Visualization - Collection Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Index</a>
+            <h1>{{ICON}} {{NAME}}</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>Input</h3>
+                    <div class="input-group">
+                        <label for="inputValue">Value</label>
+                        <input type="text" id="inputValue" placeholder="e.g., 1">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Operations</h3>
+                    <div class="operations" id="operations"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Examples</h3>
+                    <div class="examples" id="examples"></div>
+                </div>
+            </div>
+
+            <div class="visualization-area" id="visualization"></div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script>
+        class {{CLASS}}Visualizer extends BaseVisualizer {
+            constructor() {
+                super();
+                this.data = [];
+            }
+
+            getOperations() {
+                return [
+                    { name: 'add', label: 'Add', type: 'primary' },
+                    { name: 'remove', label: 'Remove', type: 'danger' },
+                    { name: 'clear', label: 'Clear', type: 'secondary' }
+                ];
+            }
+
+            getExamples() {
+                return [
+                    { label: 'Example 1', data: [1, 2, 3] }
+                ];
+            }
+
+            executeOperation(op, values, key) {
+                if (op === 'add' && values.length > 0) {
+                    this.data.push(...values);
+                } else if (op === 'remove' && values.length > 0) {
+                    this.data = this.data.filter(v => v !== values[0]);
+                } else if (op === 'clear') {
+                    this.data = [];
+                }
+                this.render();
+            }
+
+            render() {
+                const container = document.getElementById('visualization');
+                container.innerHTML = `
+                    <div class="description">
+                        <strong>{{NAME}}:</strong> {{DESCRIPTION}}
+                    </div>
+                    <div id="vizContent">Implementation in progress...</div>
+                    ${this.renderComplexity([
+                        { operation: 'Add', complexity: 'O(1)' },
+                        { operation: 'Remove', complexity: 'O(n)' }
+                    ])}
+                `;
+            }
+        }
+
+        const visualizer = new {{CLASS}}Visualizer();
+        visualizer.render();
+
+        function setupOperations() {
+            const opsContainer = document.getElementById('operations');
+            opsContainer.innerHTML = '';
+            visualizer.getOperations().forEach(op => {
+                const btn = document.createElement('button');
+                btn.className = `btn btn-${op.type || 'primary'}`;
+                btn.textContent = op.label;
+                btn.onclick = () => {
+                    const inputValue = document.getElementById('inputValue').value;
+                    const values = parseInput(inputValue, 'number');
+                    if (values.length === 0 && !['clear'].includes(op.name)) {
+                        alert('Please enter a value');
+                        return;
+                    }
+                    visualizer.executeOperation(op.name, values);
+                };
+                opsContainer.appendChild(btn);
+            });
+        }
+
+        function setupExamples() {
+            const examplesContainer = document.getElementById('examples');
+            examplesContainer.innerHTML = '';
+            visualizer.getExamples().forEach(example => {
+                const btn = document.createElement('button');
+                btn.className = 'example-btn';
+                btn.textContent = example.label;
+                btn.onclick = () => {
+                    document.getElementById('inputValue').value = example.data.join(',');
+                };
+                examplesContainer.appendChild(btn);
+            });
+        }
+
+        setupOperations();
+        setupExamples();
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const btn = document.querySelector('.theme-toggle');
+            if (btn) {
+                btn.textContent = document.body.getAttribute('data-theme') === 'dark' 
+                    ? '☀️ Light Mode' 
+                    : '🌙 Dark Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeButton();
+        });
+    </script>
+</body>
+</html>

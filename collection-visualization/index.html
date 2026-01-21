@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collection Visualization - Interactive Data Structures</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Collection Visualization</h1>
+            <p class="subtitle">Interactive Educational Tool for Learning Data Structures</p>
+        </div>
+
+        <div class="intro-section">
+            <p>Explore how common data structures work internally. Each visualization shows memory layout, operations, and algorithmic steps with animations.</p>
+        </div>
+
+        <div class="data-structures-grid">
+            <div class="ds-category">
+                <h2>Array & List</h2>
+                <div class="ds-cards">
+                    <a href="array.html" class="ds-card">
+                        <div class="ds-icon">📋</div>
+                        <h3>Array</h3>
+                        <p>Fixed-size contiguous memory structure</p>
+                        <span class="ds-badge">O(1) Access</span>
+                    </a>
+                    <a href="arraylist.html" class="ds-card">
+                        <div class="ds-icon">📝</div>
+                        <h3>ArrayList</h3>
+                        <p>Dynamic array with automatic resizing</p>
+                        <span class="ds-badge">Amortized O(1)</span>
+                    </a>
+                    <a href="linkedlist.html" class="ds-card">
+                        <div class="ds-icon">🔗</div>
+                        <h3>LinkedList</h3>
+                        <p>Singly and doubly linked lists</p>
+                        <span class="ds-badge">O(1) Insert</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="ds-category">
+                <h2>Set</h2>
+                <div class="ds-cards">
+                    <a href="hashset.html" class="ds-card">
+                        <div class="ds-icon">🗂️</div>
+                        <h3>HashSet</h3>
+                        <p>Hash table with chaining</p>
+                        <span class="ds-badge">O(1) Average</span>
+                    </a>
+                    <a href="linkedhashset.html" class="ds-card">
+                        <div class="ds-icon">🔗🗂️</div>
+                        <h3>LinkedHashSet</h3>
+                        <p>HashSet with insertion order</p>
+                        <span class="ds-badge">O(1) Average</span>
+                    </a>
+                    <a href="treeset.html" class="ds-card">
+                        <div class="ds-icon">🌳</div>
+                        <h3>TreeSet</h3>
+                        <p>Balanced binary search tree</p>
+                        <span class="ds-badge">O(log n)</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="ds-category">
+                <h2>Map</h2>
+                <div class="ds-cards">
+                    <a href="hashmap.html" class="ds-card">
+                        <div class="ds-icon">🗺️</div>
+                        <h3>HashMap</h3>
+                        <p>Key-value pairs with hash buckets</p>
+                        <span class="ds-badge">O(1) Average</span>
+                    </a>
+                    <a href="linkedhashmap.html" class="ds-card">
+                        <div class="ds-icon">🔗🗺️</div>
+                        <h3>LinkedHashMap</h3>
+                        <p>HashMap with insertion order</p>
+                        <span class="ds-badge">O(1) Average</span>
+                    </a>
+                    <a href="treemap.html" class="ds-card">
+                        <div class="ds-icon">🌳🗺️</div>
+                        <h3>TreeMap</h3>
+                        <p>Sorted key-value pairs</p>
+                        <span class="ds-badge">O(log n)</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="ds-category">
+                <h2>Stack & Queue</h2>
+                <div class="ds-cards">
+                    <a href="stack.html" class="ds-card">
+                        <div class="ds-icon">📚</div>
+                        <h3>Stack</h3>
+                        <p>LIFO - Last In First Out</p>
+                        <span class="ds-badge">O(1) Operations</span>
+                    </a>
+                    <a href="queue.html" class="ds-card">
+                        <div class="ds-icon">🚶</div>
+                        <h3>Queue</h3>
+                        <p>FIFO - First In First Out</p>
+                        <span class="ds-badge">O(1) Operations</span>
+                    </a>
+                    <a href="deque.html" class="ds-card">
+                        <div class="ds-icon">↔️</div>
+                        <h3>Deque</h3>
+                        <p>Double-ended queue</p>
+                        <span class="ds-badge">O(1) Operations</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="ds-category">
+                <h2>Tree</h2>
+                <div class="ds-cards">
+                    <a href="bst.html" class="ds-card">
+                        <div class="ds-icon">🌲</div>
+                        <h3>Binary Search Tree</h3>
+                        <p>Ordered binary tree</p>
+                        <span class="ds-badge">O(log n) Average</span>
+                    </a>
+                    <a href="avl.html" class="ds-card">
+                        <div class="ds-icon">⚖️🌲</div>
+                        <h3>AVL Tree</h3>
+                        <p>Self-balancing BST</p>
+                        <span class="ds-badge">O(log n) Guaranteed</span>
+                    </a>
+                    <a href="heap.html" class="ds-card">
+                        <div class="ds-icon">⛰️</div>
+                        <h3>Heap</h3>
+                        <p>Complete binary tree (min/max heap)</p>
+                        <span class="ds-badge">O(log n) Operations</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="ds-category">
+                <h2>Graph</h2>
+                <div class="ds-cards">
+                    <a href="graph.html" class="ds-card">
+                        <div class="ds-icon">🕸️</div>
+                        <h3>Graph</h3>
+                        <p>Adjacency list and matrix</p>
+                        <span class="ds-badge">Varies</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Interactive educational tool for understanding data structures and algorithms</p>
+        </div>
+    </div>
+
+    <style>
+        .intro-section {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px var(--shadow);
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        .data-structures-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .ds-category {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px var(--shadow);
+        }
+
+        .ds-category h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--text);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .ds-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .ds-card {
+            background: var(--node-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .ds-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px var(--shadow);
+            border-color: var(--primary);
+        }
+
+        .ds-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .ds-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .ds-card p {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 12px;
+            flex-grow: 1;
+        }
+
+        .ds-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-light);
+            margin-top: 40px;
+        }
+    </style>
+</body>
+</html>

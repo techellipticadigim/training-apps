@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArrayList Visualization - Collection Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Monaco Editor CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Index</a>
+            <h1>📝 ArrayList</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>Language / Array Type</h3>
+                    <div class="input-group">
+                        <select id="languageType" onchange="visualizer.onLanguageChange()">
+                            <option value="java">Java - ArrayList</option>
+                            <option value="javascript">JavaScript - Dynamic Array</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group" id="capacityGroup">
+                    <h3>Initial Capacity</h3>
+                    <div class="input-group">
+                        <label for="initialCapacity">Capacity</label>
+                        <input type="number" id="initialCapacity" min="1" max="1000" value="12" onchange="visualizer.setInitialCapacity()">
+                        <small style="color: var(--text-light); font-size: 0.8rem;">Default: 12 (Java ArrayList)</small>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Data Type</h3>
+                    <div class="input-group">
+                        <select id="dataType">
+                            <option value="number">Number</option>
+                            <option value="string">String</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Input</h3>
+                    <div class="input-group">
+                        <label for="inputValue">Value (comma/space/newline separated)</label>
+                        <input type="text" id="inputValue" placeholder="e.g., 1,2,3,4,5,6,7,8,9,10">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Operations</h3>
+                    <div class="operations" id="operations"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>View Options</h3>
+                    <div class="memory-toggle">
+                        <label>
+                            <input type="checkbox" id="showMemory" onchange="visualizer.toggleMemoryView()">
+                            Show Memory View
+                        </label>
+                    </div>
+                    <div class="memory-toggle">
+                        <label>
+                            <input type="checkbox" id="showDetails" onchange="visualizer.toggleDetails()">
+                            Show Computation Details
+                        </label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Examples</h3>
+                    <div class="examples" id="examples"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Export</h3>
+                    <div class="export-buttons">
+                        <button class="btn btn-secondary" onclick="exportJSON(visualizer.getState(), 'arraylist-state.json')">💾 JSON</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visualization-area">
+                <div class="view-options-bar">
+                    <div class="view-checkboxes">
+                        <label class="view-checkbox-label">
+                            <input type="checkbox" id="logicalView" checked onchange="visualizer.toggleLogicalView()">
+                            <span>Logical View</span>
+                        </label>
+                        <label class="view-checkbox-label">
+                            <input type="checkbox" id="internalMemoryView" onchange="visualizer.toggleInternalMemoryView()">
+                            <span>Internal Memory View</span>
+                        </label>
+                    </div>
+                </div>
+                <div id="visualization"></div>
+                
+                <div class="code-editor-section">
+                    <div class="code-editor-header">
+                        <h3 id="codeEditorTitle">📝 Java Code Editor</h3>
+                        <button class="btn btn-primary" onclick="runCode()">▶ Run Code</button>
+                    </div>
+                    <div id="codeEditor" class="monaco-editor-container"></div>
+                    <div id="codeOutput" class="code-output"></div>
+                </div>
+                
+                <div id="complexitySection" class="complexity-section"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <!-- Monaco Editor JS -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.min.js"></script>
+    <script>
+        let codeEditor = null;
+        
+        // Initialize Monaco Editor after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configure Monaco Editor loader
+            require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+            
+            // Initialize Monaco Editor
+            require(['vs/editor/editor.main'], function () {
+                const editorElement = document.getElementById('codeEditor');
+                if (!editorElement) {
+                    console.error('Code editor element not found');
+                    return;
+                }
+                
+                codeEditor = monaco.editor.create(editorElement, {
+                    value: `// Write your Java ArrayList code here
+import java.util.ArrayList;
+
+public class ArrayListDemo {
+    public static void main(String[] args) {
+        // Create an ArrayList
+        ArrayList<Integer> list = new ArrayList<>();
+        
+        // Add elements
+        list.add(10);
+        list.add(20);
+        list.add(30);
+        list.add(40);
+        list.add(50);
+        
+        // Access elements
+        System.out.println("First element: " + list.get(0));
+        
+        // Iterate through ArrayList
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println("list[" + i + "] = " + list.get(i));
+        }
+    }
+}`,
+                    language: 'java',
+                    theme: document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs',
+                    automaticLayout: true,
+                    fontSize: 14,
+                    minimap: { enabled: true },
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    formatOnPaste: true,
+                    formatOnType: true
+                });
+                
+                // Add Enter key listener to run code automatically
+                let lastRunTime = 0;
+                const RUN_DEBOUNCE_MS = 800;
+                let runTimeout = null;
+                
+                codeEditor.onKeyDown(function(e) {
+                    if (e.keyCode === monaco.KeyCode.Enter && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+                        if (runTimeout) {
+                            clearTimeout(runTimeout);
+                        }
+                        runTimeout = setTimeout(function() {
+                            const now = Date.now();
+                            if (now - lastRunTime >= RUN_DEBOUNCE_MS) {
+                                lastRunTime = now;
+                                runCode();
+                            }
+                        }, 100);
+                    }
+                });
+                
+                codeEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
+                    if (runTimeout) {
+                        clearTimeout(runTimeout);
+                    }
+                    runCode();
+                }, 'runCodeCtrl');
+                
+                // Update editor theme when page theme changes
+                const observer = new MutationObserver(() => {
+                    if (codeEditor) {
+                        const theme = document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs';
+                        monaco.editor.setTheme(theme);
+                    }
+                });
+                observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+                
+                // Run the default code once after editor is initialized
+                setTimeout(() => {
+                    if (typeof runCode === 'function' && codeEditor) {
+                        const langSelect = document.getElementById('languageType');
+                        if (langSelect && visualizer) {
+                            visualizer.language = langSelect.value;
+                        }
+                        runCode();
+                    }
+                }, 800);
+            });
+        });
+        
+        // Function to update code editor language and example code
+        function updateCodeEditorLanguage(language) {
+            if (!codeEditor) return;
+            
+            const editorTitle = document.getElementById('codeEditorTitle');
+            if (editorTitle) {
+                editorTitle.textContent = language === 'java' ? '📝 Java Code Editor' : '📝 JavaScript Code Editor';
+            }
+            
+            monaco.editor.setModelLanguage(codeEditor.getModel(), language === 'java' ? 'java' : 'javascript');
+            
+            const javaCode = `// Write your Java ArrayList code here
+import java.util.ArrayList;
+
+public class ArrayListDemo {
+    public static void main(String[] args) {
+        // Create an ArrayList
+        ArrayList<Integer> list = new ArrayList<>();
+        
+        // Add elements
+        list.add(10);
+        list.add(20);
+        list.add(30);
+        list.add(40);
+        list.add(50);
+        
+        // Access elements
+        System.out.println("First element: " + list.get(0));
+        
+        // Iterate through ArrayList
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println("list[" + i + "] = " + list.get(i));
+        }
+    }
+}`;
+
+            const javascriptCode = `// Write your JavaScript array code here
+// Example: Create an array (similar to ArrayList)
+const list = [];
+
+// Add elements
+list.push(10);
+list.push(20);
+list.push(30);
+list.push(40);
+list.push(50);
+
+// Access elements
+console.log("First element: " + list[0]);
+
+// Iterate through array
+for (let i = 0; i < list.length; i++) {
+    console.log("list[" + i + "] = " + list[i]);
+}
+
+// Or use forEach
+list.forEach((value, index) => {
+    console.log(\`list[\${index}] = \${value}\`);
+});`;
+
+            const currentCode = codeEditor.getValue();
+            if (currentCode.trim() === '' || 
+                currentCode.includes('Write your Java ArrayList code here') || 
+                currentCode.includes('Write your JavaScript array code here')) {
+                codeEditor.setValue(language === 'java' ? javaCode : javascriptCode);
+            }
+        }
+        
+        // Function to run code
+        function runCode() {
+            // Clear operation info when running code from editor
+            if (visualizer) {
+                visualizer.operationInfo = null;
+            }
+            
+            if (!codeEditor) {
+                alert('Code editor is not ready yet. Please wait a moment.');
+                return;
+            }
+            
+            const code = codeEditor.getValue();
+            const outputDiv = document.getElementById('codeOutput');
+            const currentLanguage = visualizer.language || 'java';
+            
+            outputDiv.innerHTML = '<div class="code-output-header">Output:</div>';
+            
+            try {
+                const arrayInfo = parseCode(code, currentLanguage);
+                
+                if (arrayInfo.error) {
+                    outputDiv.innerHTML += `<div class="error-message">❌ ${arrayInfo.error}</div>`;
+                    visualizer.errorMessage = arrayInfo.error;
+                    visualizer.render();
+                    return;
+                } else {
+                    visualizer.errorMessage = null;
+                }
+                
+                let outputHTML = '<div class="code-analysis">';
+                
+                if (arrayInfo.arrayDeclarations.length > 0) {
+                    outputHTML += '<h4>📊 Detected Arrays/ArrayLists:</h4><ul>';
+                    arrayInfo.arrayDeclarations.forEach(arr => {
+                        outputHTML += `<li>${arr.name}: ${arr.type} size = ${arr.size}</li>`;
+                        
+                        if (arr.values !== undefined && arr.values !== null) {
+                            const values = arr.values;
+                            
+                            if (currentLanguage === 'javascript') {
+                                // JavaScript: dynamic array - set capacity based on actual values
+                                let actualSize = 0;
+                                if (Array.isArray(values)) {
+                                    actualSize = values.length;
+                                } else if (Object.keys(values).length > 0) {
+                                    actualSize = Math.max(...Object.keys(values).map(k => parseInt(k)).filter(k => !isNaN(k))) + 1;
+                                }
+                                // For JavaScript, set capacity to actual size (0 for empty arrays)
+                                visualizer.capacity = actualSize;
+                                visualizer.data = new Array(visualizer.capacity);
+                            } else {
+                                // Java: For ArrayList, initialize with capacity from input
+                                const capacityInput = document.getElementById('initialCapacity');
+                                const initialCap = capacityInput ? parseInt(capacityInput.value) || 12 : 12;
+                                visualizer.initialCapacity = initialCap;
+                                
+                                if (arr.size > 0) {
+                                    // Calculate capacity: start with initial capacity, grow if needed
+                                    visualizer.capacity = initialCap;
+                                    // If size exceeds initial capacity, calculate required capacity
+                                    if (arr.size > initialCap) {
+                                        let requiredCapacity = initialCap;
+                                        while (requiredCapacity < arr.size) {
+                                            // Growth formula: new capacity = old capacity + (old capacity / 2)
+                                            requiredCapacity = requiredCapacity + Math.floor(requiredCapacity / 2);
+                                        }
+                                        visualizer.capacity = requiredCapacity;
+                                    }
+                                    visualizer.data = new Array(visualizer.capacity);
+                                } else {
+                                    // Empty ArrayList - set to 0 to show empty message
+                                    visualizer.capacity = 0;
+                                    visualizer.data = [];
+                                }
+                            }
+                            
+                            let maxIndex = -1;
+                            
+                            if (Array.isArray(values)) {
+                                values.forEach((val, idx) => {
+                                    if (idx >= 0 && idx < visualizer.capacity) {
+                                        visualizer.data[idx] = val;
+                                        maxIndex = Math.max(maxIndex, idx);
+                                    }
+                                });
+                            } else {
+                                for (let key in values) {
+                                    const idx = parseInt(key);
+                                    if (!isNaN(idx) && idx >= 0 && idx < visualizer.capacity) {
+                                        visualizer.data[idx] = values[idx];
+                                        maxIndex = Math.max(maxIndex, idx);
+                                    }
+                                }
+                            }
+                            
+                            visualizer.size = maxIndex >= 0 ? maxIndex + 1 : 0;
+                            
+                            // For JavaScript empty arrays, ensure capacity is also 0 (no blocks shown)
+                            if (currentLanguage === 'javascript' && visualizer.size === 0 && (Array.isArray(values) ? values.length === 0 : Object.keys(values).length === 0)) {
+                                visualizer.capacity = 0;
+                                visualizer.data = [];
+                            }
+                            
+                            // For Java empty ArrayLists, ensure capacity is 0 (no blocks shown)
+                            if (currentLanguage === 'java' && visualizer.size === 0 && arr.size === 0 && (Array.isArray(values) ? values.length === 0 : Object.keys(values).length === 0)) {
+                                visualizer.capacity = 0;
+                                visualizer.data = [];
+                            }
+                            
+                            visualizer.render();
+                        } else if (arr.values !== undefined && arr.values !== null && currentLanguage === 'javascript') {
+                            // Handle empty JavaScript arrays that were declared but not populated
+                            if ((Array.isArray(arr.values) && arr.values.length === 0) || (typeof arr.values === 'object' && Object.keys(arr.values).length === 0)) {
+                                visualizer.capacity = 0;
+                                visualizer.size = 0;
+                                visualizer.data = [];
+                                visualizer.render();
+                            }
+                        } else {
+                            // Handle case where values is undefined/null but array is declared (shouldn't happen, but safe guard)
+                            if (arr.size === 0) {
+                                visualizer.capacity = 0;
+                                visualizer.size = 0;
+                                visualizer.data = [];
+                                visualizer.render();
+                            }
+                        }
+                    });
+                    outputHTML += '</ul>';
+                }
+                
+                if (arrayInfo.operations.length > 0) {
+                    outputHTML += '<h4>🔍 Detected Operations:</h4><ul>';
+                    arrayInfo.operations.forEach(op => {
+                        outputHTML += `<li>${op}</li>`;
+                    });
+                    outputHTML += '</ul>';
+                }
+                
+                if (arrayInfo.output.length > 0) {
+                    outputHTML += '<h4>📝 Simulated Output:</h4><pre>' + arrayInfo.output.join('\\n') + '</pre>';
+                }
+                
+                outputHTML += '</div>';
+                outputDiv.innerHTML += outputHTML;
+                outputDiv.innerHTML += '<div class="success-message">✅ Code parsed successfully! ArrayList visualization updated.</div>';
+                
+                if (visualizer.errorMessage) {
+                    visualizer.errorMessage = null;
+                    visualizer.render();
+                }
+                
+            } catch (error) {
+                const errorMsg = `Error: ${error.message}`;
+                outputDiv.innerHTML += `<div class="error-message">❌ ${errorMsg}</div>`;
+                visualizer.errorMessage = errorMsg;
+                visualizer.render();
+            }
+        }
+        
+        // Function to parse code (Java or JavaScript)
+        function parseCode(code, language = 'java') {
+            const result = {
+                arrayDeclarations: [],
+                operations: [],
+                output: [],
+                error: null
+            };
+            
+            try {
+                code = code.replace(/\/\/.*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+                
+                if (language === 'java') {
+                    // Java: Find ArrayList declarations
+                    const arrayListRegex = /ArrayList\s*<\s*\w+\s*>\s*(\w+)\s*=\s*new\s+ArrayList\s*<\s*\w+\s*>\s*\(\)/g;
+                    let match;
+                    while ((match = arrayListRegex.exec(code)) !== null) {
+                        const name = match[1];
+                        result.arrayDeclarations.push({
+                            type: 'ArrayList',
+                            name: name,
+                            size: 0,
+                            values: []
+                        });
+                    }
+                    
+                    // Find ArrayList.add() operations
+                    const addRegex = /(\w+)\.add\s*\(([^)]+)\)/g;
+                    while ((match = addRegex.exec(code)) !== null) {
+                        const arrName = match[1];
+                        const valueStr = match[2].trim();
+                        const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
+                        if (arrDecl) {
+                            let parsedValue = valueStr;
+                            const num = Number(valueStr);
+                            if (!isNaN(num) && valueStr !== '' && valueStr.trim() !== '') {
+                                parsedValue = num;
+                            } else if (valueStr.match(/^".*"$/)) {
+                                parsedValue = valueStr.replace(/"/g, '');
+                            } else if (valueStr.match(/^'.*'$/)) {
+                                parsedValue = valueStr.replace(/'/g, '');
+                            }
+                            
+                            // Ensure values is an array
+                            if (!Array.isArray(arrDecl.values)) {
+                                arrDecl.values = [];
+                            }
+                            
+                            arrDecl.values.push(parsedValue);
+                            arrDecl.size = arrDecl.values.length;
+                            result.operations.push(`Add: ${arrName}.add(${parsedValue})`);
+                        } else {
+                            // If ArrayList wasn't declared yet, create it
+                            result.arrayDeclarations.push({
+                                type: 'ArrayList',
+                                name: arrName,
+                                size: 1,
+                                values: []
+                            });
+                            const newArrDecl = result.arrayDeclarations[result.arrayDeclarations.length - 1];
+                            let parsedValue = valueStr;
+                            const num = Number(valueStr);
+                            if (!isNaN(num) && valueStr !== '' && valueStr.trim() !== '') {
+                                parsedValue = num;
+                            } else if (valueStr.match(/^".*"$/)) {
+                                parsedValue = valueStr.replace(/"/g, '');
+                            } else if (valueStr.match(/^'.*'$/)) {
+                                parsedValue = valueStr.replace(/'/g, '');
+                            }
+                            newArrDecl.values.push(parsedValue);
+                            newArrDecl.size = 1;
+                            result.operations.push(`Add: ${arrName}.add(${parsedValue})`);
+                        }
+                    }
+                    
+                    // Find ArrayList.get() operations
+                    const getRegex = /(\w+)\.get\s*\(\s*(-?\d+)\s*\)/g;
+                    while ((match = getRegex.exec(code)) !== null) {
+                        const arrName = match[1];
+                        const idx = parseInt(match[2]);
+                        const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
+                        if (arrDecl) {
+                            if (idx < 0 || idx >= arrDecl.size) {
+                                result.error = `IndexOutOfBoundsException: Index ${idx} out of bounds for size ${arrDecl.size}`;
+                                return result;
+                            }
+                            result.operations.push(`Get: ${arrName}.get(${idx})`);
+                        }
+                    }
+                    
+                    // Find System.out.println statements
+                    const printRegex = /System\.out\.println\s*\([^)]+\)/g;
+                    while ((match = printRegex.exec(code)) !== null) {
+                        const printContent = match[0].match(/\(([^)]+)\)/);
+                        if (printContent) {
+                            const content = printContent[1];
+                            const getMatch = content.match(/(\w+)\.get\s*\(\s*(-?\d+)\s*\)/);
+                            if (getMatch) {
+                                const arrName = getMatch[1];
+                                const idx = parseInt(getMatch[2]);
+                                const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
+                                if (arrDecl) {
+                                    // Check for out-of-bounds access
+                                    if (idx < 0 || idx >= arrDecl.size) {
+                                        result.error = `IndexOutOfBoundsException: Index ${idx} out of bounds for size ${arrDecl.size}`;
+                                        result.output.push(`Exception in thread "main" java.lang.IndexOutOfBoundsException: Index ${idx} out of bounds for size ${arrDecl.size}`);
+                                        return result; // Stop parsing and return error
+                                    }
+                                    if (arrDecl.values[idx] !== undefined) {
+                                        result.output.push(`${arrName}[${idx}] = ${arrDecl.values[idx]}`);
+                                    }
+                                }
+                            } else {
+                                // Remove quotes and template literals
+                                let output = content.replace(/["']/g, '').replace(/`/g, '');
+                                result.output.push(output);
+                            }
+                        }
+                    }
+                } else {
+                    // JavaScript: Find array literals
+                    const jsArrayLiteralRegex = /(?:const|let|var)\s+(\w+)\s*=\s*\[([^\]]*)\]/g;
+                    while ((match = jsArrayLiteralRegex.exec(code)) !== null) {
+                        const name = match[1];
+                        const valuesStr = match[2].trim();
+                        const existingDecl = result.arrayDeclarations.find(a => a.name === name);
+                        if (!existingDecl) {
+                            let values = [];
+                            if (valuesStr) {
+                                values = valuesStr.split(',').map(v => {
+                                    const trimmed = v.trim();
+                                    const num = Number(trimmed);
+                                    if (!isNaN(num) && trimmed !== '') {
+                                        return num;
+                                    }
+                                    if (trimmed.match(/^["'].*["']$/)) {
+                                        return trimmed.replace(/["']/g, '');
+                                    }
+                                    return trimmed;
+                                }).filter(v => v !== '');
+                            }
+                            result.arrayDeclarations.push({
+                                type: 'Array',
+                                name: name,
+                                size: values.length,
+                                values: values
+                            });
+                            if (values.length > 0) {
+                                result.operations.push(`Initialization: ${name} = [${values.join(', ')}]`);
+                            } else {
+                                result.operations.push(`Declaration: ${name} = []`);
+                            }
+                        }
+                    }
+                    
+                    // JavaScript: Find array.push() operations
+                    const jsPushRegex = /(\w+)\.push\s*\(([^)]+)\)/g;
+                    while ((match = jsPushRegex.exec(code)) !== null) {
+                        const arrName = match[1];
+                        const valueStr = match[2].trim();
+                        const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
+                        if (arrDecl) {
+                            let parsedValue = valueStr;
+                            const num = Number(valueStr);
+                            if (!isNaN(num) && valueStr !== '') {
+                                parsedValue = num;
+                            } else if (valueStr.match(/^["'].*["']$/)) {
+                                parsedValue = valueStr.replace(/["']/g, '');
+                            }
+                            if (Array.isArray(arrDecl.values)) {
+                                arrDecl.values.push(parsedValue);
+                            } else {
+                                arrDecl.values = [parsedValue];
+                            }
+                            arrDecl.size = arrDecl.values.length;
+                            result.operations.push(`Push: ${arrName}.push(${parsedValue})`);
+                        }
+                    }
+                    
+                    // JavaScript: Find console.log statements
+                    const consoleRegex = /console\.log\s*\([^)]+\)/g;
+                    while ((match = consoleRegex.exec(code)) !== null) {
+                        const printContent = match[0].match(/\(([^)]+)\)/);
+                        if (printContent) {
+                            const content = printContent[1];
+                            const arrAccessMatch = content.match(/(\w+)\s*\[\s*(-?\d+)\s*\]/);
+                            if (arrAccessMatch) {
+                                const arrName = arrAccessMatch[1];
+                                const idx = parseInt(arrAccessMatch[2]);
+                                const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
+                                if (arrDecl) {
+                                    // Check for out-of-bounds access
+                                    if (idx < 0 || idx >= arrDecl.size) {
+                                        result.error = `RangeError: Index ${idx} out of bounds for length ${arrDecl.size}`;
+                                        result.output.push(`RangeError: Index ${idx} out of bounds for length ${arrDecl.size}`);
+                                        return result; // Stop parsing and return error
+                                    }
+                                    if (arrDecl.values[idx] !== undefined) {
+                                        result.output.push(`${arrName}[${idx}] = ${arrDecl.values[idx]}`);
+                                    }
+                                }
+                            } else {
+                                // Remove quotes and template literals
+                                let output = content.replace(/["']/g, '').replace(/`/g, '');
+                                // Handle template literals like `list[${i}] = ${list[i]}`
+                                output = output.replace(/\$\{([^}]+)\}/g, (match, expr) => {
+                                    // Try to evaluate simple expressions
+                                    const arrMatch = expr.match(/(\w+)\s*\[\s*(\d+)\s*\]/);
+                                    if (arrMatch) {
+                                        const arrName = arrMatch[1];
+                                        const idx = parseInt(arrMatch[2]);
+                                        const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
+                                        if (arrDecl) {
+                                            if (idx < 0 || idx >= arrDecl.size) {
+                                                result.error = `RangeError: Index ${idx} out of bounds for length ${arrDecl.size}`;
+                                                return '';
+                                            }
+                                            const value = Array.isArray(arrDecl.values) 
+                                                ? arrDecl.values[idx] 
+                                                : arrDecl.values[idx];
+                                            return value !== undefined ? value : '';
+                                        }
+                                    }
+                                    return expr;
+                                });
+                                result.output.push(output);
+                            }
+                        }
+                    }
+                    
+                    // Find array accesses: arr[index] (for error checking)
+                    const accessRegex = /(\w+)\s*\[\s*(-?\d+)\s*\]/g;
+                    const accesses = [];
+                    while ((match = accessRegex.exec(code)) !== null) {
+                        const arrName = match[1];
+                        const index = parseInt(match[2]);
+                        
+                        // Check if this access is out of bounds (but don't stop - check all accesses first)
+                        const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
+                        if (arrDecl) {
+                            if (index < 0 || index >= arrDecl.size) {
+                                const errorMsg = `RangeError: Index ${index} out of bounds for length ${arrDecl.size}`;
+                                result.error = errorMsg;
+                                result.operations.push(`Access: ${arrName}[${index}] ❌ OUT OF BOUNDS`);
+                                return result; // Stop parsing and return error
+                            }
+                        }
+                        
+                        accesses.push({ name: arrName, index: index });
+                        result.operations.push(`Access: ${arrName}[${index}]`);
+                    }
+                }
+                
+            } catch (error) {
+                result.error = error.message;
+            }
+            
+            return result;
+        }
+        
+        class ArrayListVisualizer extends BaseVisualizer {
+            constructor() {
+                super();
+                this.capacity = 0; // Start with 0 capacity - empty array
+                this.size = 0;
+                this.data = [];
+                this.growthFactor = 1.5;
+                this.showMemory = false;
+                this.showDetails = false;
+                this.language = 'java'; // 'java' or 'javascript'
+                this.errorMessage = null;
+                this.logicalView = true; // Logical View is checked by default
+                this.internalMemoryView = false;
+                this.initialCapacity = 12; // Default initial capacity for Java
+                this.operationInfo = null; // Stores operation count and details
+            }
+
+            getOperations() {
+                return [
+                    { name: 'add', label: 'Add Element', type: 'primary' },
+                    { name: 'addAtIndex', label: 'Add Element at Index', type: 'primary' },
+                    { name: 'remove', label: 'Remove at Index', type: 'danger' },
+                    { name: 'search', label: 'Search Value', type: 'success' },
+                    { name: 'clear', label: 'Clear', type: 'secondary' }
+                ];
+            }
+
+            getExamples() {
+                return [
+                    { label: '1-10 (resize)', data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+                    { label: 'Quick test', data: [1, 2, 3] }
+                ];
+            }
+
+            executeOperation(op, values, key) {
+                this.errorMessage = null;
+                this.operationInfo = null; // Reset operation info
+                let operationsCount = 0;
+                let operationDetails = [];
+                
+                if (op === 'add' && values.length > 0) {
+                    // Initialize data array if needed
+                    if (!this.data || this.data.length === 0 || this.capacity === 0) {
+                        const capacityInput = document.getElementById('initialCapacity');
+                        this.initialCapacity = capacityInput ? parseInt(capacityInput.value) || 12 : 12;
+                        this.capacity = this.initialCapacity;
+                        this.data = new Array(this.capacity);
+                        operationsCount += 1;
+                        operationDetails.push('Initialize array');
+                    }
+                    
+                    let resizeCount = 0;
+                    let resizeOps = [];
+                    let elementsAdded = 0;
+                    
+                    values.forEach(v => {
+                        if (this.size >= this.capacity) {
+                            resizeCount++;
+                            const oldSize = this.size;
+                            this.resize();
+                            operationsCount += oldSize; // Copy existing elements during resize
+                            resizeOps.push(`Copied ${oldSize} element${oldSize !== 1 ? 's' : ''} during resize`);
+                        }
+                        this.data[this.size] = v;
+                        operationsCount += 1; // Assign element
+                        this.size++;
+                        elementsAdded++;
+                    });
+                    
+                    let opsDescription = [];
+                    if (operationDetails.length > 0) {
+                        opsDescription.push(...operationDetails);
+                    }
+                    if (resizeCount > 0) {
+                        opsDescription.push(`Resized ${resizeCount} time${resizeCount !== 1 ? 's' : ''}`);
+                        opsDescription.push(...resizeOps);
+                    }
+                    opsDescription.push(`Added ${elementsAdded} element${elementsAdded !== 1 ? 's' : ''}`);
+                    
+                    operationDetails = [ `${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: ${opsDescription.join(', ')}` ];
+                } else if (op === 'remove' && values.length > 0) {
+                    const index = parseInt(values[0]);
+                    if (index < 0 || index >= this.size) {
+                        const errorMsg = this.language === 'java' 
+                            ? `IndexOutOfBoundsException: Index ${index} out of bounds for size ${this.size}`
+                            : `RangeError: Index ${index} out of bounds for length ${this.size}`;
+                        this.errorMessage = errorMsg;
+                        operationDetails.push(`1 operation performed: Index validation (out of bounds)`);
+                        operationsCount = 1;
+                        if (operationDetails.length > 0) {
+                            this.operationInfo = {
+                                count: operationsCount,
+                                details: operationDetails.join(' ')
+                            };
+                        }
+                        this.render();
+                        return;
+                    }
+                    
+                    let elementsShifted = 0;
+                    for (let i = index; i < this.size - 1; i++) {
+                        this.data[i] = this.data[i + 1];
+                        elementsShifted++;
+                        operationsCount += 1; // Move each element
+                    }
+                    this.size--;
+                    this.data[this.size] = undefined;
+                    operationsCount += 1; // Clear last element
+                    
+                    if (elementsShifted > 0) {
+                        operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: Shifted ${elementsShifted} element${elementsShifted !== 1 ? 's' : ''}, Cleared last element`);
+                    } else {
+                        operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: Cleared element (no shift needed)`);
+                    }
+                } else if (op === 'addAtIndex' && values.length >= 2) {
+                    // Add Element at Index: takes index and value
+                    const index = parseInt(values[0]);
+                    const value = values[1];
+                    
+                    // Validate index
+                    if (index < 0 || index > this.size) {
+                        const errorMsg = this.language === 'java' 
+                            ? `IndexOutOfBoundsException: Index ${index} out of bounds for size ${this.size}`
+                            : `RangeError: Index ${index} out of bounds for length ${this.size}`;
+                        this.errorMessage = errorMsg;
+                        operationDetails.push(`1 operation performed: Index validation (out of bounds)`);
+                        operationsCount = 1;
+                        if (operationDetails.length > 0) {
+                            this.operationInfo = {
+                                count: operationsCount,
+                                details: operationDetails.join(' ')
+                            };
+                        }
+                        this.render();
+                        return;
+                    }
+                    
+                    // Initialize data array if needed
+                    let needsInit = false;
+                    if (!this.data || this.data.length === 0 || this.capacity === 0) {
+                        const capacityInput = document.getElementById('initialCapacity');
+                        this.initialCapacity = capacityInput ? parseInt(capacityInput.value) || 12 : 12;
+                        this.capacity = this.initialCapacity;
+                        this.data = new Array(this.capacity);
+                        needsInit = true;
+                        operationsCount += 1;
+                        operationDetails.push('Initialize array');
+                    }
+                    
+                    // Check if resize is needed
+                    let resizeCount = 0;
+                    let resizeOps = [];
+                    if (this.size >= this.capacity) {
+                        resizeCount++;
+                        const oldSize = this.size;
+                        this.resize();
+                        operationsCount += oldSize; // Copy existing elements during resize
+                        resizeOps.push(`Copied ${oldSize} element${oldSize !== 1 ? 's' : ''} during resize`);
+                    }
+                    
+                    // Shift elements to the right
+                    let elementsShifted = 0;
+                    for (let i = this.size; i > index; i--) {
+                        this.data[i] = this.data[i - 1];
+                        elementsShifted++;
+                        operationsCount += 1; // Shift each element
+                    }
+                    
+                    // Insert the new element
+                    this.data[index] = value;
+                    operationsCount += 1; // Insert element
+                    this.size++;
+                    
+                    // Build operation description
+                    let opsDescription = [];
+                    if (operationDetails.length > 0) {
+                        opsDescription.push(...operationDetails);
+                    }
+                    if (resizeCount > 0) {
+                        opsDescription.push(`Resized ${resizeCount} time${resizeCount !== 1 ? 's' : ''}`);
+                        opsDescription.push(...resizeOps);
+                    }
+                    if (elementsShifted > 0) {
+                        opsDescription.push(`Shifted ${elementsShifted} element${elementsShifted !== 1 ? 's' : ''} to the right`);
+                    }
+                    opsDescription.push(`Inserted element at index ${index}`);
+                    
+                    operationDetails = [ `${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: ${opsDescription.join(', ')}` ];
+                } else if (op === 'search' && values.length > 0) {
+                    const val = values[0];
+                    this.searchValue = val;
+                    
+                    // Count comparisons made during search
+                    let comparisons = 0;
+                    for (let i = 0; i < this.size; i++) {
+                        comparisons++;
+                        if (this.data[i] === val) {
+                            operationDetails.push(`${comparisons} operation${comparisons !== 1 ? 's' : ''} performed: Compared ${comparisons} element${comparisons !== 1 ? 's' : ''}, Value found at index ${i}`);
+                            operationsCount = comparisons;
+                            break;
+                        }
+                    }
+                    if (comparisons === this.size && this.data[this.size - 1] !== val) {
+                        operationDetails.push(`${comparisons} operation${comparisons !== 1 ? 's' : ''} performed: Compared ${comparisons} element${comparisons !== 1 ? 's' : ''}, Value not found`);
+                        operationsCount = comparisons;
+                    }
+                } else if (op === 'clear') {
+                    operationsCount = 1; // Clear operation
+                    this.data = [];
+                    this.size = 0;
+                    this.capacity = 0; // Set to 0 for empty array
+                    operationDetails.push(`${operationsCount} operation performed: Cleared all elements`);
+                }
+                
+                // Store operation info
+                if (operationDetails.length > 0) {
+                    this.operationInfo = {
+                        count: operationsCount,
+                        details: operationDetails.join(' ')
+                    };
+                }
+                
+                this.render();
+            }
+
+            resize() {
+                const oldCapacity = this.capacity;
+                // If capacity is 0, use initial capacity
+                if (this.capacity === 0) {
+                    const capacityInput = document.getElementById('initialCapacity');
+                    this.initialCapacity = capacityInput ? parseInt(capacityInput.value) || 12 : 12;
+                    this.capacity = this.initialCapacity;
+                } else {
+                    // New capacity = old capacity + (old capacity / 2)
+                    // This is the formula specified by the user
+                    this.capacity = oldCapacity + Math.floor(oldCapacity / 2);
+                }
+                const newData = new Array(this.capacity);
+                for (let i = 0; i < this.size; i++) {
+                    newData[i] = this.data[i];
+                }
+                this.data = newData;
+                if (this.showDetails) {
+                    alert(`Resized from ${oldCapacity} to ${this.capacity} (growth: old + old/2)`);
+                }
+            }
+
+            toggleMemoryView() {
+                this.showMemory = document.getElementById('showMemory').checked;
+                this.render();
+            }
+
+            toggleDetails() {
+                this.showDetails = document.getElementById('showDetails').checked;
+                this.render();
+            }
+
+            toggleLogicalView() {
+                const logicalCheckbox = document.getElementById('logicalView');
+                const internalCheckbox = document.getElementById('internalMemoryView');
+                
+                if (logicalCheckbox.checked) {
+                    // Logical view is checked, uncheck internal memory view
+                    this.logicalView = true;
+                    if (internalCheckbox) {
+                        internalCheckbox.checked = false;
+                        this.internalMemoryView = false;
+                    }
+                } else {
+                    // Logical view is unchecked, ensure internal memory view is checked
+                    this.logicalView = false;
+                    if (internalCheckbox) {
+                        internalCheckbox.checked = true;
+                        this.internalMemoryView = true;
+                    }
+                }
+                this.render();
+            }
+
+            toggleInternalMemoryView() {
+                const logicalCheckbox = document.getElementById('logicalView');
+                const internalCheckbox = document.getElementById('internalMemoryView');
+                
+                if (internalCheckbox.checked) {
+                    // Internal memory view is checked, uncheck logical view
+                    this.internalMemoryView = true;
+                    if (logicalCheckbox) {
+                        logicalCheckbox.checked = false;
+                        this.logicalView = false;
+                    }
+                } else {
+                    // Internal memory view is unchecked, ensure logical view is checked
+                    this.internalMemoryView = false;
+                    if (logicalCheckbox) {
+                        logicalCheckbox.checked = true;
+                        this.logicalView = true;
+                    }
+                }
+                this.render();
+            }
+
+            setInitialCapacity() {
+                const capacityInput = document.getElementById('initialCapacity');
+                if (capacityInput) {
+                    const newCapacity = parseInt(capacityInput.value) || 12;
+                    this.initialCapacity = newCapacity;
+                    
+                    // If capacity is being set and we're in internal memory view, update capacity
+                    // Only if current capacity is less than new initial capacity
+                    if (this.internalMemoryView && this.capacity < newCapacity && this.size === 0) {
+                        this.capacity = newCapacity;
+                        this.data = new Array(this.capacity);
+                    }
+                    this.render();
+                }
+            }
+
+            onLanguageChange() {
+                const langSelect = document.getElementById('languageType');
+                this.language = langSelect.value;
+                this.errorMessage = null;
+                this.render();
+                this.renderComplexitySection();
+                
+                if (typeof updateCodeEditorLanguage === 'function') {
+                    updateCodeEditorLanguage(this.language);
+                }
+            }
+            
+            renderComplexitySection() {
+                const complexityContainer = document.getElementById('complexitySection');
+                if (complexityContainer) {
+                    complexityContainer.innerHTML = this.renderComplexity([
+                        { operation: 'Access by index', complexity: 'O(1)' },
+                        { operation: 'Add (amortized)', complexity: 'O(1)' },
+                        { operation: 'Add (worst case)', complexity: 'O(n) - resize' },
+                        { operation: 'Delete', complexity: 'O(n)' }
+                    ]);
+                }
+            }
+
+            render() {
+                const container = document.getElementById('visualization');
+                const arrayType = this.language === 'java' ? 'ArrayList (Java)' : 'Dynamic Array (JavaScript)';
+                const description = this.language === 'java' 
+                    ? 'Dynamic array that automatically resizes when capacity is reached. Growth factor: 1.5x'
+                    : 'Dynamic array that automatically grows when needed. Elements added at the end.';
+                
+                container.innerHTML = `
+                    <div class="description">
+                        <strong>${arrayType}:</strong> ${description}
+                        ${this.showDetails ? `<br>Size: ${this.size}, Capacity: ${this.capacity}, Memory efficiency: ${this.capacity > 0 ? ((this.size / this.capacity) * 100).toFixed(1) : 0}%` : ''}
+                    </div>
+                    ${this.errorMessage ? `<div style="background: var(--danger); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-weight: 600;">
+                        ⚠️ ${this.errorMessage}
+                    </div>` : ''}
+                    ${this.operationInfo ? `<div style="background: var(--primary); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        🔢 <strong>Operation Count:</strong> ${this.operationInfo.details}
+                    </div>` : ''}
+                    <div class="array-container" id="arrayViz"></div>
+                    ${this.showMemory ? this.renderMemoryView([
+                        `Base address: 0x1000`,
+                        `Element size: 8 bytes`,
+                        `Total memory: ${this.capacity * 8} bytes`,
+                        `Used memory: ${this.size * 8} bytes`
+                    ]) : ''}
+                `;
+
+                const vizContainer = document.getElementById('arrayViz');
+                vizContainer.innerHTML = '';
+                
+                // Determine how many cells to show based on view mode
+                let cellsToShow = 0;
+                if (this.logicalView) {
+                    // Logical View: Show only actual elements (size)
+                    cellsToShow = this.size;
+                } else if (this.internalMemoryView) {
+                    // Internal Memory View: Show capacity (elements + unused capacity)
+                    cellsToShow = this.capacity > 0 ? this.capacity : 0;
+                }
+                
+                if (cellsToShow > 0) {
+                    for (let i = 0; i < cellsToShow; i++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'array-cell';
+                        if (i < this.size) {
+                            cell.classList.add('active');
+                        } else {
+                            // Unused capacity cells in internal memory view
+                            cell.classList.add('unused');
+                        }
+                        if (this.searchValue && this.data[i] === this.searchValue) {
+                            cell.classList.add('highlight');
+                        }
+                        cell.innerHTML = `
+                            <span class="index">${i}</span>
+                            <span class="value">${this.data[i] !== undefined ? this.data[i] : '∅'}</span>
+                            ${this.showMemory ? `<span class="memory-addr">0x${(1000 + i * 8).toString(16)}</span>` : ''}
+                        `;
+                        vizContainer.appendChild(cell);
+                    }
+                } else {
+                    // Show empty message if array is empty
+                    vizContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light); font-style: italic;">ArrayList is empty. Run code to visualize array.</div>';
+                }
+                this.searchValue = null;
+                
+                // Render time complexity section separately (below code editor)
+                this.renderComplexitySection();
+            }
+        }
+
+        const visualizer = new ArrayListVisualizer();
+        // Initial render to show empty array state
+        // visualizer.render() will update after running default code from editor
+        // visualizer.render(); // Commented out - will be called after auto-run of default code
+
+        function setupOperations() {
+            const opsContainer = document.getElementById('operations');
+            opsContainer.innerHTML = '';
+            visualizer.getOperations().forEach(op => {
+                const btn = document.createElement('button');
+                btn.className = `btn btn-${op.type || 'primary'}`;
+                btn.textContent = op.label;
+                btn.onclick = () => {
+                    const inputValue = document.getElementById('inputValue').value;
+                    const values = parseInput(inputValue, document.getElementById('dataType').value);
+                    if (values.length === 0 && !['clear'].includes(op.name)) {
+                        alert('Please enter a value');
+                        return;
+                    }
+                    if (op.name === 'addAtIndex' && values.length < 2) {
+                        alert('Please enter index and value (e.g., 2,100 where 2 is index and 100 is value)');
+                        return;
+                    }
+                    visualizer.executeOperation(op.name, values);
+                };
+                opsContainer.appendChild(btn);
+            });
+        }
+
+        function setupExamples() {
+            const examplesContainer = document.getElementById('examples');
+            examplesContainer.innerHTML = '';
+            visualizer.getExamples().forEach(example => {
+                const btn = document.createElement('button');
+                btn.className = 'example-btn';
+                btn.textContent = example.label;
+                btn.onclick = () => {
+                    document.getElementById('inputValue').value = example.data.join(',');
+                };
+                examplesContainer.appendChild(btn);
+            });
+        }
+
+        setupOperations();
+        setupExamples();
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const btn = document.querySelector('.theme-toggle');
+            if (btn) {
+                btn.textContent = document.body.getAttribute('data-theme') === 'dark' 
+                    ? '☀️ Light Mode' 
+                    : '🌙 Dark Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeButton();
+            
+            // Initialize view modes - ensure Logical View is checked by default
+            const logicalCheckbox = document.getElementById('logicalView');
+            const internalCheckbox = document.getElementById('internalMemoryView');
+            if (logicalCheckbox && !logicalCheckbox.checked && !internalCheckbox.checked) {
+                logicalCheckbox.checked = true;
+                visualizer.logicalView = true;
+                visualizer.internalMemoryView = false;
+            }
+            
+            // Initialize language mode
+            visualizer.onLanguageChange();
+        });
+    </script>
+</body>
+</html>
+

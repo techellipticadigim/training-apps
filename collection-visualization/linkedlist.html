@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedList Visualization - Collection Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Monaco Editor CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Index</a>
+            <h1>🔗 LinkedList</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>Language / List Type</h3>
+                    <div class="input-group">
+                        <select id="languageType" onchange="visualizer.onLanguageChange()">
+                            <option value="java">Java - LinkedList</option>
+                            <option value="javascript">JavaScript - Custom LinkedList</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Data Type</h3>
+                    <div class="input-group">
+                        <select id="dataType">
+                            <option value="number">Number</option>
+                            <option value="string">String</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Input</h3>
+                    <div class="input-group">
+                        <label for="inputValue">Value (comma/space/newline separated)</label>
+                        <input type="text" id="inputValue" placeholder="e.g., A,B,C,D">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Operations</h3>
+                    <div class="operations" id="operations"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>View Options</h3>
+                    <div class="memory-toggle">
+                        <label>
+                            <input type="checkbox" id="showMemory" onchange="visualizer.toggleMemoryView()">
+                            Show Memory View
+                        </label>
+                    </div>
+                    <div class="memory-toggle">
+                        <label>
+                            <input type="checkbox" id="doublyLinked" onchange="visualizer.toggleDoubly()">
+                            Doubly Linked List
+                        </label>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Examples</h3>
+                    <div class="examples" id="examples"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Export</h3>
+                    <div class="export-buttons">
+                        <button class="btn btn-secondary" onclick="exportJSON(visualizer.getState(), 'linkedlist-state.json')">💾 JSON</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visualization-area">
+                <div id="visualization"></div>
+                
+                <div class="code-editor-section">
+                    <div class="code-editor-header">
+                        <h3 id="codeEditorTitle">📝 Java Code Editor</h3>
+                        <button class="btn btn-primary" onclick="runCode()">▶ Run Code</button>
+                    </div>
+                    <div id="codeEditor" class="monaco-editor-container"></div>
+                    <div id="codeOutput" class="code-output"></div>
+                </div>
+                
+                <div id="complexitySection" class="complexity-section"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <!-- Monaco Editor JS -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.min.js"></script>
+    <script>
+        let codeEditor = null;
+        
+        // Initialize Monaco Editor after DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configure Monaco Editor loader
+            require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } });
+            
+            // Initialize Monaco Editor
+            require(['vs/editor/editor.main'], function () {
+                const editorElement = document.getElementById('codeEditor');
+                if (!editorElement) {
+                    console.error('Code editor element not found');
+                    return;
+                }
+                
+                codeEditor = monaco.editor.create(editorElement, {
+                    value: `// Write your Java LinkedList code here
+import java.util.LinkedList;
+
+public class LinkedListDemo {
+    public static void main(String[] args) {
+        // Create a LinkedList
+        LinkedList<Integer> list = new LinkedList<>();
+        
+        // Add elements
+        list.add(10);
+        list.add(20);
+        list.add(30);
+        list.addFirst(5);
+        list.addLast(40);
+        
+        // Access elements
+        System.out.println("First element: " + list.getFirst());
+        System.out.println("Last element: " + list.getLast());
+        
+        // Iterate through LinkedList
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println("list[" + i + "] = " + list.get(i));
+        }
+        
+        // Or use enhanced for loop
+        for (Integer value : list) {
+            System.out.println("Value: " + value);
+        }
+    }
+}`,
+                    language: 'java',
+                    theme: document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs',
+                    automaticLayout: true,
+                    fontSize: 14,
+                    minimap: { enabled: true },
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    formatOnPaste: true,
+                    formatOnType: true
+                });
+                
+                // Add Enter key listener to run code automatically
+                let lastRunTime = 0;
+                const RUN_DEBOUNCE_MS = 800;
+                let runTimeout = null;
+                
+                codeEditor.onKeyDown(function(e) {
+                    if (e.keyCode === monaco.KeyCode.Enter && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+                        if (runTimeout) {
+                            clearTimeout(runTimeout);
+                        }
+                        runTimeout = setTimeout(function() {
+                            const now = Date.now();
+                            if (now - lastRunTime >= RUN_DEBOUNCE_MS) {
+                                lastRunTime = now;
+                                runCode();
+                            }
+                        }, 100);
+                    }
+                });
+                
+                codeEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
+                    if (runTimeout) {
+                        clearTimeout(runTimeout);
+                    }
+                    runCode();
+                }, 'runCodeCtrl');
+                
+                // Update editor theme when page theme changes
+                const observer = new MutationObserver(() => {
+                    if (codeEditor) {
+                        const theme = document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs';
+                        monaco.editor.setTheme(theme);
+                    }
+                });
+                observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+                
+                // Run the default code once after editor is initialized
+                setTimeout(() => {
+                    if (typeof runCode === 'function' && codeEditor) {
+                        const langSelect = document.getElementById('languageType');
+                        if (langSelect && visualizer) {
+                            visualizer.language = langSelect.value;
+                        }
+                        runCode();
+                    }
+                }, 800);
+            });
+        });
+        
+        // Function to update code editor language and example code
+        function updateCodeEditorLanguage(language) {
+            if (!codeEditor) return;
+            
+            const editorTitle = document.getElementById('codeEditorTitle');
+            if (editorTitle) {
+                editorTitle.textContent = language === 'java' ? '📝 Java Code Editor' : '📝 JavaScript Code Editor';
+            }
+            
+            monaco.editor.setModelLanguage(codeEditor.getModel(), language === 'java' ? 'java' : 'javascript');
+            
+            const javaCode = `// Write your Java LinkedList code here
+import java.util.LinkedList;
+
+public class LinkedListDemo {
+    public static void main(String[] args) {
+        // Create a LinkedList
+        LinkedList<Integer> list = new LinkedList<>();
+        
+        // Add elements
+        list.add(10);
+        list.add(20);
+        list.add(30);
+        list.addFirst(5);
+        list.addLast(40);
+        
+        // Access elements
+        System.out.println("First element: " + list.getFirst());
+        System.out.println("Last element: " + list.getLast());
+        
+        // Iterate through LinkedList
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println("list[" + i + "] = " + list.get(i));
+        }
+        
+        // Or use enhanced for loop
+        for (Integer value : list) {
+            System.out.println("Value: " + value);
+        }
+    }
+}`;
+
+            const javascriptCode = `// Write your JavaScript LinkedList code here
+// Custom LinkedList implementation
+class Node {
+    constructor(value) {
+        this.value = value;
+        this.next = null;
+    }
+}
+
+class LinkedList {
+    constructor() {
+        this.head = null;
+        this.tail = null;
+        this.size = 0;
+    }
+    
+    add(value) {
+        const newNode = new Node(value);
+        if (!this.head) {
+            this.head = newNode;
+            this.tail = newNode;
+        } else {
+            this.tail.next = newNode;
+            this.tail = newNode;
+        }
+        this.size++;
+    }
+    
+    addFirst(value) {
+        const newNode = new Node(value);
+        if (!this.head) {
+            this.head = newNode;
+            this.tail = newNode;
+        } else {
+            newNode.next = this.head;
+            this.head = newNode;
+        }
+        this.size++;
+    }
+    
+    getFirst() {
+        return this.head ? this.head.value : null;
+    }
+    
+    getLast() {
+        return this.tail ? this.tail.value : null;
+    }
+}
+
+// Example usage
+const list = new LinkedList();
+list.add(10);
+list.add(20);
+list.add(30);
+list.addFirst(5);
+list.addLast(40);
+
+console.log("First element: " + list.getFirst());
+console.log("Last element: " + list.getLast());
+
+// Iterate through LinkedList
+let current = list.head;
+let index = 0;
+while (current) {
+    console.log(\`list[\${index}] = \${current.value}\`);
+    current = current.next;
+    index++;
+}`;
+
+            const currentCode = codeEditor.getValue();
+            if (currentCode.trim() === '' || 
+                currentCode.includes('Write your Java LinkedList code here') || 
+                currentCode.includes('Write your JavaScript LinkedList code here')) {
+                codeEditor.setValue(language === 'java' ? javaCode : javascriptCode);
+            }
+        }
+        
+        class LinkedListVisualizer extends BaseVisualizer {
+            constructor() {
+                super();
+                this.head = null;
+                this.tail = null;
+                this.doubly = false;
+                this.showMemory = false;
+                this.language = 'java'; // 'java' or 'javascript'
+                this.errorMessage = null;
+                this.operationInfo = null; // Stores operation count and details
+            }
+
+            getOperations() {
+                return [
+                    { name: 'add', label: 'Add to Head', type: 'primary' },
+                    { name: 'addTail', label: 'Add to Tail', type: 'primary' },
+                    { name: 'addAtIndex', label: 'Add at Index', type: 'primary' },
+                    { name: 'remove', label: 'Remove Value', type: 'danger' },
+                    { name: 'search', label: 'Search', type: 'success' },
+                    { name: 'clear', label: 'Clear', type: 'secondary' }
+                ];
+            }
+
+            getExamples() {
+                return [
+                    { label: 'A,B,C,D', data: ['A', 'B', 'C', 'D'] },
+                    { label: '1,2,3,4,5', data: [1, 2, 3, 4, 5] }
+                ];
+            }
+
+            executeOperation(op, values, key) {
+                this.operationInfo = null; // Reset operation info
+                let operationsCount = 0;
+                let operationDetails = [];
+                
+                if (op === 'add' && values.length > 0) {
+                    // Add to Head: O(1) - count operations per element
+                    const elementCount = values.length;
+                    let totalOps = 0;
+                    let opsList = [];
+                    
+                    values.forEach((v, idx) => {
+                        const node = { value: v, next: this.head, prev: this.doubly ? null : undefined };
+                        let opsForThisElement = 1; // Update head
+                        opsList.push('Update head pointer');
+                        
+                        if (this.doubly && this.head) {
+                            this.head.prev = node;
+                            opsForThisElement += 1;
+                            opsList.push('Update prev pointer of old head');
+                        }
+                        if (!this.tail) {
+                            this.tail = node;
+                            opsForThisElement += 1;
+                            opsList.push('Update tail pointer');
+                        }
+                        totalOps += opsForThisElement;
+                        this.head = node;
+                    });
+                    
+                    operationsCount = totalOps;
+                    const uniqueOps = [...new Set(opsList)];
+                    operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: ${uniqueOps.join(', ')}`);
+                } else if (op === 'addTail' && values.length > 0) {
+                    // Add to Tail: O(1) - count operations per element
+                    let totalOps = 0;
+                    let opsList = [];
+                    
+                    values.forEach(v => {
+                        const node = { value: v, next: null, prev: this.doubly ? this.tail : undefined };
+                        let opsForThisElement = 1; // Update tail
+                        
+                        if (this.tail) {
+                            this.tail.next = node;
+                            opsForThisElement += 1;
+                            if (this.doubly) {
+                                node.prev = this.tail;
+                                opsForThisElement += 1;
+                            }
+                        } else {
+                            this.head = node;
+                            opsForThisElement += 1;
+                        }
+                        this.tail = node;
+                        totalOps += opsForThisElement;
+                        
+                        if (this.tail.prev) opsList.push('Update next pointer of previous tail');
+                        if (this.doubly && this.tail.prev) opsList.push('Update prev pointer of new node');
+                        if (!this.tail.prev) opsList.push('Update head pointer');
+                        opsList.push('Update tail pointer');
+                    });
+                    
+                    operationsCount = totalOps;
+                    const uniqueOps = [...new Set(opsList)];
+                    operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: ${uniqueOps.join(', ')}`);
+                } else if (op === 'remove' && values.length > 0) {
+                    // Delete: O(n) - count traversals + pointer updates
+                    const val = values[0];
+                    let current = this.head;
+                    let prev = null;
+                    let nodesTraversed = 0;
+                    let found = false;
+                    let pointerOps = 0;
+                    let opsList = [];
+                    
+                    while (current) {
+                        nodesTraversed++;
+                        if (current.value === val) {
+                            found = true;
+                            if (prev) {
+                                prev.next = current.next;
+                                pointerOps += 1;
+                                opsList.push('Update prev.next pointer');
+                                if (this.doubly && current.next) {
+                                    current.next.prev = prev;
+                                    pointerOps += 1;
+                                    opsList.push('Update next.prev pointer');
+                                }
+                            } else {
+                                this.head = current.next;
+                                pointerOps += 1;
+                                opsList.push('Update head pointer');
+                                if (this.doubly && this.head) {
+                                    this.head.prev = null;
+                                    pointerOps += 1;
+                                    opsList.push('Update head.prev pointer');
+                                }
+                            }
+                            if (current === this.tail) {
+                                this.tail = prev;
+                                pointerOps += 1;
+                                opsList.push('Update tail pointer');
+                            }
+                            break;
+                        }
+                        prev = current;
+                        current = current.next;
+                    }
+                    
+                    operationsCount = nodesTraversed + pointerOps;
+                    if (found) {
+                        operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: Traversed ${nodesTraversed} node${nodesTraversed !== 1 ? 's' : ''}, ${opsList.join(', ')}`);
+                    } else {
+                        operationDetails.push(`${nodesTraversed} node${nodesTraversed !== 1 ? 's' : ''} traversed - Value not found`);
+                        operationsCount = nodesTraversed;
+                    }
+                } else if (op === 'clear') {
+                    operationsCount = 2; // Reset head and tail
+                    this.head = null;
+                    this.tail = null;
+                    operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: Reset head pointer, Reset tail pointer`);
+                } else if (op === 'search' && values.length > 0) {
+                    // Search: O(n) - count traversals
+                    const val = values[0];
+                    let current = this.head;
+                    let nodesTraversed = 0;
+                    let found = false;
+                    
+                    while (current) {
+                        nodesTraversed++;
+                        if (current.value === val) {
+                            found = true;
+                            break;
+                        }
+                        current = current.next;
+                    }
+                    
+                    operationsCount = nodesTraversed;
+                    if (found) {
+                        operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: Traversed ${nodesTraversed} node${nodesTraversed !== 1 ? 's' : ''}, Value found`);
+                    } else {
+                        operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: Traversed ${nodesTraversed} node${nodesTraversed !== 1 ? 's' : ''}, Value not found`);
+                    }
+                } else if (op === 'addAtIndex' && values.length >= 2) {
+                    // Add at Index: O(n) - count traversals + pointer updates
+                    const index = parseInt(values[0]);
+                    const value = values[1];
+                    
+                    // Validate index
+                    const nodeCount = this.countNodes();
+                    if (index < 0 || index > nodeCount) {
+                        const errorMsg = this.language === 'java' 
+                            ? `IndexOutOfBoundsException: Index ${index} out of bounds for size ${nodeCount}`
+                            : `RangeError: Index ${index} out of bounds for length ${nodeCount}`;
+                        this.errorMessage = errorMsg;
+                        operationDetails.push(`1 operation performed: Index validation (out of bounds)`);
+                        operationsCount = 1;
+                        if (operationDetails.length > 0) {
+                            this.operationInfo = {
+                                count: operationsCount,
+                                details: operationDetails.join(' ')
+                            };
+                        }
+                        this.render();
+                        return;
+                    }
+                    
+                    // Special cases: index 0 (head) or index == size (tail)
+                    if (index === 0) {
+                        // Add to head
+                        const node = { value: value, next: this.head, prev: this.doubly ? null : undefined };
+                        operationsCount = 1; // Update head
+                        let opsList = ['Update head pointer'];
+                        
+                        if (this.doubly && this.head) {
+                            this.head.prev = node;
+                            operationsCount += 1;
+                            opsList.push('Update prev pointer of old head');
+                        }
+                        if (!this.tail) {
+                            this.tail = node;
+                            operationsCount += 1;
+                            opsList.push('Update tail pointer');
+                        }
+                        this.head = node;
+                        operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: ${opsList.join(', ')}`);
+                    } else if (index === nodeCount) {
+                        // Add to tail
+                        const node = { value: value, next: null, prev: this.doubly ? this.tail : undefined };
+                        operationsCount = 0;
+                        let opsList = [];
+                        
+                        if (this.tail) {
+                            this.tail.next = node;
+                            operationsCount += 1;
+                            opsList.push('Update next pointer of previous tail');
+                            if (this.doubly) {
+                                node.prev = this.tail;
+                                operationsCount += 1;
+                                opsList.push('Update prev pointer of new node');
+                            }
+                        } else {
+                            this.head = node;
+                            operationsCount += 1;
+                            opsList.push('Update head pointer');
+                        }
+                        this.tail = node;
+                        operationsCount += 1;
+                        opsList.push('Update tail pointer');
+                        operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: ${opsList.join(', ')}`);
+                    } else {
+                        // Add at specific index in middle - need to traverse
+                        let current = this.head;
+                        let prev = null;
+                        let nodesTraversed = 0;
+                        let opsList = [];
+                        
+                        // Traverse to the index
+                        while (nodesTraversed < index && current) {
+                            nodesTraversed++;
+                            prev = current;
+                            current = current.next;
+                        }
+                        
+                        // Create new node
+                        const newNode = { value: value, next: current, prev: this.doubly ? prev : undefined };
+                        
+                        // Actually perform the insertion and count operations
+                        let pointerOps = 0;
+                        if (prev) {
+                            prev.next = newNode;
+                            pointerOps += 1;
+                            opsList.push('Update prev.next pointer');
+                        } else {
+                            this.head = newNode;
+                            pointerOps += 1;
+                            opsList.push('Update head pointer');
+                        }
+                        
+                        if (this.doubly && current) {
+                            current.prev = newNode;
+                            pointerOps += 1;
+                            opsList.push('Update next.prev pointer');
+                        }
+                        
+                        operationsCount = nodesTraversed + pointerOps;
+                        operationDetails.push(`${operationsCount} operation${operationsCount !== 1 ? 's' : ''} performed: Traversed ${nodesTraversed} node${nodesTraversed !== 1 ? 's' : ''}, ${opsList.join(', ')}`);
+                    }
+                }
+                
+                // Store operation info
+                if (operationDetails.length > 0) {
+                    this.operationInfo = {
+                        count: operationsCount,
+                        details: operationDetails.join(' ')
+                    };
+                }
+                
+                this.render();
+            }
+
+            toggleMemoryView() {
+                this.showMemory = document.getElementById('showMemory').checked;
+                this.render();
+            }
+
+            toggleDoubly() {
+                this.doubly = document.getElementById('doublyLinked').checked;
+                this.render();
+            }
+
+            countNodes() {
+                let count = 0;
+                let current = this.head;
+                while (current) {
+                    count++;
+                    current = current.next;
+                }
+                return count;
+            }
+
+            onLanguageChange() {
+                const langSelect = document.getElementById('languageType');
+                this.language = langSelect.value;
+                this.errorMessage = null;
+                this.render();
+                this.renderComplexitySection();
+                
+                if (typeof updateCodeEditorLanguage === 'function') {
+                    updateCodeEditorLanguage(this.language);
+                }
+            }
+            
+            renderComplexitySection() {
+                const complexityContainer = document.getElementById('complexitySection');
+                if (complexityContainer) {
+                    complexityContainer.innerHTML = this.renderComplexity([
+                        { operation: 'Insert at head', complexity: 'O(1)' },
+                        { operation: 'Insert at tail', complexity: this.tail ? 'O(1)' : 'O(n)' },
+                        { operation: 'Search', complexity: 'O(n)' },
+                        { operation: 'Delete', complexity: 'O(n)' }
+                    ]);
+                }
+            }
+
+            render() {
+                const container = document.getElementById('visualization');
+                const listType = this.doubly ? 'Doubly' : 'Singly';
+                const description = `${listType} linked list with nodes containing value and pointer(s) to next${this.doubly ? ' and previous' : ''} node.`;
+                
+                container.innerHTML = `
+                    <div class="description">
+                        <strong>LinkedList (${this.language === 'java' ? 'Java' : 'JavaScript'}):</strong> ${description}
+                        <br>Head: ${this.head ? this.head.value : 'null'}, Tail: ${this.tail ? this.tail.value : 'null'}, Size: ${this.countNodes()}
+                    </div>
+                    ${this.errorMessage ? `<div style="background: var(--danger); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-weight: 600;">
+                        ⚠️ ${this.errorMessage}
+                    </div>` : ''}
+                    ${this.operationInfo ? `<div style="background: var(--primary); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        🔢 <strong>Operation Count:</strong> ${this.operationInfo.details}
+                    </div>` : ''}
+                    <div class="linked-list-container" id="listViz"></div>
+                    ${this.showMemory ? this.renderMemoryView([
+                        `Each node: value (8 bytes) + next pointer (8 bytes)${this.doubly ? ' + prev pointer (8 bytes)' : ''}`,
+                        `Head pointer: ${this.head ? '0x2000' : 'null'}`,
+                        `Tail pointer: ${this.tail ? '0x' + (0x2000 + (this.countNodes() - 1) * 0x20).toString(16) : 'null'}`
+                    ]) : ''}
+                `;
+
+                const vizContainer = document.getElementById('listViz');
+                if (!vizContainer) {
+                    this.renderComplexitySection();
+                    return;
+                }
+                
+                vizContainer.innerHTML = '';
+                
+                if (!this.head) {
+                    vizContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light); font-style: italic;">LinkedList is empty. Run code to visualize list.</div>';
+                    // Render time complexity section even when empty
+                    this.renderComplexitySection();
+                    return;
+                }
+
+                // First pass: Create a map of nodes to their memory addresses
+                const nodeToAddress = new Map();
+                let temp = this.head;
+                let tempAddr = 0x2000;
+                while (temp) {
+                    nodeToAddress.set(temp, tempAddr);
+                    temp = temp.next;
+                    tempAddr += 0x20;
+                }
+                
+                // Second pass: Render nodes with memory addresses for pointers
+                let current = this.head;
+                let addr = 0x2000;
+                while (current) {
+                    const nodeDiv = document.createElement('div');
+                    nodeDiv.className = 'list-node';
+                    // Always show memory address for each node
+                    const memAddr = `<div style="font-size:0.7rem;color:var(--memory-addr)">0x${addr.toString(16)}</div>`;
+                    
+                    // Get memory addresses for next and prev pointers
+                    const nextAddr = current.next ? nodeToAddress.get(current.next) : null;
+                    const prevAddr = current.prev ? nodeToAddress.get(current.prev) : null;
+                    
+                    const nextPointer = nextAddr ? `0x${nextAddr.toString(16)}` : 'null';
+                    const prevPointer = prevAddr ? `0x${prevAddr.toString(16)}` : 'null';
+                    
+                    nodeDiv.innerHTML = `
+                        <div class="list-node-box ${current === this.head ? 'active' : ''}">
+                            ${memAddr}
+                            <div class="value">${current.value}</div>
+                            <div class="pointer-label">next: ${nextPointer}</div>
+                            ${this.doubly ? `<div class="pointer-label">prev: ${prevPointer}</div>` : ''}
+                        </div>
+                    `;
+                    vizContainer.appendChild(nodeDiv);
+                    
+                    // Add forward/backward arrow container between nodes
+                    if (current.next) {
+                        const arrowContainer = document.createElement('div');
+                        arrowContainer.className = 'arrow-container-linked-list';
+                        if (this.doubly) {
+                            // Both forward and backward arrows in same container
+                            arrowContainer.innerHTML = '<div class="arrow forward-arrow"></div><div style="height:10px;"></div><div class="arrow backward-arrow"></div>';
+                        } else {
+                            // Only forward arrow for singly linked list
+                            arrowContainer.innerHTML = '<div class="arrow forward-arrow"></div>';
+                        }
+                        vizContainer.appendChild(arrowContainer);
+                    }
+                    
+                    current = current.next;
+                    addr += 0x20;
+                }
+                
+                // Render time complexity section separately (below code editor)
+                this.renderComplexitySection();
+            }
+        }
+
+        const visualizer = new LinkedListVisualizer();
+        // Initial render will be called in DOMContentLoaded after DOM is ready
+
+        function setupOperations() {
+            const opsContainer = document.getElementById('operations');
+            opsContainer.innerHTML = '';
+            visualizer.getOperations().forEach(op => {
+                const btn = document.createElement('button');
+                btn.className = `btn btn-${op.type || 'primary'}`;
+                btn.textContent = op.label;
+                btn.onclick = () => {
+                    const inputValue = document.getElementById('inputValue').value;
+                    const values = parseInput(inputValue, document.getElementById('dataType').value);
+                    if (values.length === 0 && !['clear'].includes(op.name)) {
+                        alert('Please enter a value');
+                        return;
+                    }
+                    if (op.name === 'addAtIndex' && values.length < 2) {
+                        alert('Please enter index and value (e.g., 2,100 where 2 is index and 100 is value)');
+                        return;
+                    }
+                    visualizer.executeOperation(op.name, values);
+                };
+                opsContainer.appendChild(btn);
+            });
+        }
+
+        function setupExamples() {
+            const examplesContainer = document.getElementById('examples');
+            examplesContainer.innerHTML = '';
+            visualizer.getExamples().forEach(example => {
+                const btn = document.createElement('button');
+                btn.className = 'example-btn';
+                btn.textContent = example.label;
+                btn.onclick = () => {
+                    document.getElementById('inputValue').value = example.data.join(',');
+                };
+                examplesContainer.appendChild(btn);
+            });
+        }
+        
+        // Function to run code
+        function runCode() {
+            if (!codeEditor) {
+                alert('Code editor is not ready yet. Please wait a moment.');
+                return;
+            }
+            
+            const code = codeEditor.getValue();
+            const outputDiv = document.getElementById('codeOutput');
+            const currentLanguage = visualizer.language || 'java';
+            
+            outputDiv.innerHTML = '<div class="code-output-header">Output:</div>';
+            
+            try {
+                const listInfo = parseCode(code, currentLanguage);
+                
+                if (listInfo.error) {
+                    outputDiv.innerHTML += `<div class="error-message">❌ ${listInfo.error}</div>`;
+                    visualizer.errorMessage = listInfo.error;
+                    visualizer.render();
+                    return;
+                } else {
+                    visualizer.errorMessage = null;
+                }
+                
+                let outputHTML = '<div class="code-analysis">';
+                
+                // Clear existing list first
+                visualizer.head = null;
+                visualizer.tail = null;
+                
+                if (listInfo.listDeclarations.length > 0) {
+                    outputHTML += '<h4>📊 Detected LinkedLists:</h4><ul>';
+                    listInfo.listDeclarations.forEach(list => {
+                        outputHTML += `<li>${list.name}: ${list.type} size = ${list.size}</li>`;
+                        
+                        // Update visualizer with parsed values
+                        if (list.values && list.values.length > 0) {
+                            // Build linked list from values in order
+                            list.values.forEach((val, idx) => {
+                                const node = {
+                                    value: val,
+                                    next: null,
+                                    prev: visualizer.doubly ? null : undefined
+                                };
+                                
+                                if (!visualizer.head) {
+                                    visualizer.head = node;
+                                    visualizer.tail = node;
+                                } else {
+                                    if (visualizer.doubly) {
+                                        node.prev = visualizer.tail;
+                                        visualizer.tail.next = node;
+                                    } else {
+                                        visualizer.tail.next = node;
+                                    }
+                                    visualizer.tail = node;
+                                }
+                            });
+                        }
+                    });
+                    outputHTML += '</ul>';
+                } else {
+                    // No LinkedList declarations found - show message
+                    outputHTML += '<div class="warning-message">⚠️ No LinkedList declarations found in the code.</div>';
+                }
+                
+                if (listInfo.operations.length > 0) {
+                    outputHTML += '<h4>🔍 Detected Operations:</h4><ul>';
+                    listInfo.operations.forEach(op => {
+                        outputHTML += `<li>${op}</li>`;
+                    });
+                    outputHTML += '</ul>';
+                }
+                
+                if (listInfo.output.length > 0) {
+                    outputHTML += '<h4>📝 Simulated Output:</h4><pre>' + listInfo.output.join('\\n') + '</pre>';
+                }
+                
+                outputHTML += '</div>';
+                outputDiv.innerHTML += outputHTML;
+                
+                // Always render the visualizer, even if empty
+                visualizer.render();
+                
+                if (listInfo.listDeclarations.length > 0 && listInfo.listDeclarations.some(l => l.values && l.values.length > 0)) {
+                    outputDiv.innerHTML += '<div class="success-message">✅ Code parsed successfully! LinkedList visualization updated.</div>';
+                } else if (listInfo.listDeclarations.length > 0) {
+                    outputDiv.innerHTML += '<div class="success-message">✅ Code parsed successfully! LinkedList is empty.</div>';
+                }
+                
+                if (visualizer.errorMessage) {
+                    visualizer.errorMessage = null;
+                    visualizer.render();
+                }
+                
+            } catch (error) {
+                const errorMsg = `Error: ${error.message}`;
+                outputDiv.innerHTML += `<div class="error-message">❌ ${errorMsg}</div>`;
+                visualizer.errorMessage = errorMsg;
+                visualizer.render();
+            }
+        }
+        
+        // Function to parse code (Java or JavaScript) and extract LinkedList information
+        function parseCode(code, language = 'java') {
+            const result = {
+                listDeclarations: [],
+                operations: [],
+                output: [],
+                error: null
+            };
+            
+            try {
+                // Remove comments
+                code = code.replace(/\/\/.*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+                
+                if (language === 'java') {
+                    // Java: Find LinkedList declarations - handle both LinkedList<Integer> list = new LinkedList<>() and LinkedList<Integer> list = new LinkedList<Integer>()
+                    // Try diamond operator first
+                    const linkedListRegex1 = /LinkedList\s*<\s*\w+\s*>\s*(\w+)\s*=\s*new\s+LinkedList\s*<>\s*\(\)/g;
+                    let match;
+                    while ((match = linkedListRegex1.exec(code)) !== null) {
+                        const name = match[1];
+                        if (!result.listDeclarations.find(l => l.name === name)) {
+                            result.listDeclarations.push({
+                                type: 'LinkedList',
+                                name: name,
+                                size: 0,
+                                values: []
+                            });
+                        }
+                    }
+                    
+                    // Also try with explicit type parameter
+                    const linkedListRegex2 = /LinkedList\s*<\s*\w+\s*>\s*(\w+)\s*=\s*new\s+LinkedList\s*<\s*\w*\s*>\s*\(\)/g;
+                    while ((match = linkedListRegex2.exec(code)) !== null) {
+                        const name = match[1];
+                        if (!result.listDeclarations.find(l => l.name === name)) {
+                            result.listDeclarations.push({
+                                type: 'LinkedList',
+                                name: name,
+                                size: 0,
+                                values: []
+                            });
+                        }
+                    }
+                    
+                    // Find LinkedList.add() operations (but not addFirst or addLast)
+                    const addRegex = /(\w+)\.add\s*\(\s*([^)]+)\s*\)/g;
+                    while ((match = addRegex.exec(code)) !== null) {
+                        const fullMatch = match[0];
+                        // Skip if this is addFirst or addLast (handled separately)
+                        if (fullMatch.includes('addFirst') || fullMatch.includes('addLast')) {
+                            continue;
+                        }
+                        
+                        const listName = match[1];
+                        const valueStr = match[2].trim();
+                        
+                        // If LinkedList wasn't declared yet, create it
+                        let listDecl = result.listDeclarations.find(l => l.name === listName);
+                        if (!listDecl) {
+                            result.listDeclarations.push({
+                                type: 'LinkedList',
+                                name: listName,
+                                size: 0,
+                                values: []
+                            });
+                            listDecl = result.listDeclarations[result.listDeclarations.length - 1];
+                        }
+                        
+                        let parsedValue = valueStr;
+                        const num = Number(valueStr);
+                        if (!isNaN(num) && valueStr !== '') {
+                            parsedValue = num;
+                        } else if (valueStr.match(/^".*"$/)) {
+                            parsedValue = valueStr.replace(/"/g, '');
+                        }
+                        listDecl.values.push(parsedValue);
+                        listDecl.size++;
+                        result.operations.push(`Add: ${listName}.add(${parsedValue})`);
+                    }
+                    
+                    // Find LinkedList.addFirst() operations
+                    const addFirstRegex = /(\w+)\.addFirst\s*\(\s*([^)]+)\s*\)/g;
+                    while ((match = addFirstRegex.exec(code)) !== null) {
+                        const listName = match[1];
+                        const valueStr = match[2].trim();
+                        
+                        // If LinkedList wasn't declared yet, create it
+                        let listDecl = result.listDeclarations.find(l => l.name === listName);
+                        if (!listDecl) {
+                            result.listDeclarations.push({
+                                type: 'LinkedList',
+                                name: listName,
+                                size: 0,
+                                values: []
+                            });
+                            listDecl = result.listDeclarations[result.listDeclarations.length - 1];
+                        }
+                        
+                        let parsedValue = valueStr;
+                        const num = Number(valueStr);
+                        if (!isNaN(num) && valueStr !== '') {
+                            parsedValue = num;
+                        } else if (valueStr.match(/^".*"$/)) {
+                            parsedValue = valueStr.replace(/"/g, '');
+                        }
+                        listDecl.values.unshift(parsedValue); // Add to front
+                        listDecl.size++;
+                        result.operations.push(`AddFirst: ${listName}.addFirst(${parsedValue})`);
+                    }
+                    
+                    // Find LinkedList.addLast() operations
+                    const addLastRegex = /(\w+)\.addLast\s*\(\s*([^)]+)\s*\)/g;
+                    while ((match = addLastRegex.exec(code)) !== null) {
+                        const listName = match[1];
+                        const valueStr = match[2].trim();
+                        
+                        // If LinkedList wasn't declared yet, create it
+                        let listDecl = result.listDeclarations.find(l => l.name === listName);
+                        if (!listDecl) {
+                            result.listDeclarations.push({
+                                type: 'LinkedList',
+                                name: listName,
+                                size: 0,
+                                values: []
+                            });
+                            listDecl = result.listDeclarations[result.listDeclarations.length - 1];
+                        }
+                        
+                        let parsedValue = valueStr;
+                        const num = Number(valueStr);
+                        if (!isNaN(num) && valueStr !== '') {
+                            parsedValue = num;
+                        } else if (valueStr.match(/^".*"$/)) {
+                            parsedValue = valueStr.replace(/"/g, '');
+                        }
+                        listDecl.values.push(parsedValue); // Add to end
+                        listDecl.size++;
+                        result.operations.push(`AddLast: ${listName}.addLast(${parsedValue})`);
+                    }
+                    
+                    // Find System.out.println statements
+                    const printRegex = /System\.out\.println\s*\([^)]+\)/g;
+                    while ((match = printRegex.exec(code)) !== null) {
+                        const printContent = match[0].match(/\(([^)]+)\)/);
+                        if (printContent) {
+                            const content = printContent[1];
+                            // Handle string concatenation and method calls
+                            let output = content.replace(/["']/g, '').replace(/\+/g, '');
+                            result.output.push(output);
+                        }
+                    }
+                } else {
+                    // JavaScript: Find LinkedList class and instances
+                    const jsLinkedListRegex = /const\s+(\w+)\s*=\s*new\s+LinkedList\s*\(\)/g;
+                    let match;
+                    while ((match = jsLinkedListRegex.exec(code)) !== null) {
+                        const name = match[1];
+                        result.listDeclarations.push({
+                            type: 'LinkedList',
+                            name: name,
+                            size: 0,
+                            values: []
+                        });
+                    }
+                    
+                    // Find list.add() operations
+                    const jsAddRegex = /(\w+)\.add\s*\(\s*([^)]+)\s*\)/g;
+                    while ((match = jsAddRegex.exec(code)) !== null) {
+                        const fullMatch = match[0];
+                        // Skip if this is addFirst (handled separately)
+                        if (fullMatch.includes('addFirst') || fullMatch.includes('addLast')) {
+                            continue;
+                        }
+                        
+                        const listName = match[1];
+                        const valueStr = match[2].trim();
+                        
+                        // If LinkedList wasn't declared yet, create it
+                        let listDecl = result.listDeclarations.find(l => l.name === listName);
+                        if (!listDecl) {
+                            result.listDeclarations.push({
+                                type: 'LinkedList',
+                                name: listName,
+                                size: 0,
+                                values: []
+                            });
+                            listDecl = result.listDeclarations[result.listDeclarations.length - 1];
+                        }
+                        
+                        let parsedValue = valueStr;
+                        const num = Number(valueStr);
+                        if (!isNaN(num) && valueStr !== '') {
+                            parsedValue = num;
+                        } else if (valueStr.match(/^["'].*["']$/)) {
+                            parsedValue = valueStr.replace(/["']/g, '');
+                        }
+                        listDecl.values.push(parsedValue);
+                        listDecl.size++;
+                        result.operations.push(`Add: ${listName}.add(${parsedValue})`);
+                    }
+                    
+                    // Find list.addFirst() operations
+                    const jsAddFirstRegex = /(\w+)\.addFirst\s*\(\s*([^)]+)\s*\)/g;
+                    while ((match = jsAddFirstRegex.exec(code)) !== null) {
+                        const listName = match[1];
+                        const valueStr = match[2].trim();
+                        
+                        // If LinkedList wasn't declared yet, create it
+                        let listDecl = result.listDeclarations.find(l => l.name === listName);
+                        if (!listDecl) {
+                            result.listDeclarations.push({
+                                type: 'LinkedList',
+                                name: listName,
+                                size: 0,
+                                values: []
+                            });
+                            listDecl = result.listDeclarations[result.listDeclarations.length - 1];
+                        }
+                        
+                        let parsedValue = valueStr;
+                        const num = Number(valueStr);
+                        if (!isNaN(num) && valueStr !== '') {
+                            parsedValue = num;
+                        } else if (valueStr.match(/^["'].*["']$/)) {
+                            parsedValue = valueStr.replace(/["']/g, '');
+                        }
+                        listDecl.values.unshift(parsedValue);
+                        listDecl.size++;
+                        result.operations.push(`AddFirst: ${listName}.addFirst(${parsedValue})`);
+                    }
+                    
+                    // Find console.log statements
+                    const consoleRegex = /console\.log\s*\([^)]+\)/g;
+                    while ((match = consoleRegex.exec(code)) !== null) {
+                        const printContent = match[0].match(/\(([^)]+)\)/);
+                        if (printContent) {
+                            const content = printContent[1];
+                            // Handle template literals
+                            let output = content.replace(/["']/g, '').replace(/`/g, '');
+                            output = output.replace(/\$\{([^}]+)\}/g, (match, expr) => {
+                                // Try to evaluate simple expressions
+                                const listMatch = expr.match(/(\w+)\.(getFirst|getLast)\(\)/);
+                                if (listMatch) {
+                                    const listName = listMatch[1];
+                                    const method = listMatch[2];
+                                    const listDecl = result.listDeclarations.find(l => l.name === listName);
+                                    if (listDecl && listDecl.values.length > 0) {
+                                        if (method === 'getFirst') {
+                                            return listDecl.values[0];
+                                        } else if (method === 'getLast') {
+                                            return listDecl.values[listDecl.values.length - 1];
+                                        }
+                                    }
+                                }
+                                return expr;
+                            });
+                            result.output.push(output);
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                result.error = error.message;
+            }
+            
+            return result;
+        }
+
+        setupOperations();
+        setupExamples();
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const btn = document.querySelector('.theme-toggle');
+            if (btn) {
+                btn.textContent = document.body.getAttribute('data-theme') === 'dark' 
+                    ? '☀️ Light Mode' 
+                    : '🌙 Dark Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeButton();
+            
+            // Setup operations and examples first
+            setupOperations();
+            setupExamples();
+            
+            // Initialize language mode
+            if (visualizer) {
+                // Initial render to show empty list state
+                visualizer.render();
+                visualizer.onLanguageChange();
+            }
+        });
+    </script>
+</body>
+</html>
+

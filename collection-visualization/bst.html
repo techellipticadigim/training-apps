@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search Tree Visualization - Collection Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="back-link">← Back to Index</a>
+            <h1>🌲 Binary Search Tree</h1>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="control-group">
+                    <h3>Input</h3>
+                    <div class="input-group">
+                        <label for="inputValue">Value (comma separated)</label>
+                        <input type="text" id="inputValue" placeholder="e.g., 30,20,40,10,25">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Operations</h3>
+                    <div class="operations" id="operations"></div>
+                </div>
+
+                <div class="control-group">
+                    <h3>Examples</h3>
+                    <div class="examples" id="examples"></div>
+                </div>
+            </div>
+
+            <div class="visualization-area" id="visualization"></div>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script>
+        class BSTVisualizer extends BaseVisualizer {
+            constructor() {
+                super();
+                this.root = null;
+            }
+
+            getOperations() {
+                return [
+                    { name: 'insert', label: 'Insert', type: 'primary' },
+                    { name: 'search', label: 'Search', type: 'success' },
+                    { name: 'delete', label: 'Delete', type: 'danger' },
+                    { name: 'clear', label: 'Clear', type: 'secondary' }
+                ];
+            }
+
+            getExamples() {
+                return [
+                    { label: '30,20,40,10,25', data: [30, 20, 40, 10, 25] },
+                    { label: '5,3,7,2,4,6,8', data: [5, 3, 7, 2, 4, 6, 8] }
+                ];
+            }
+
+            insertNode(node, value) {
+                if (!node) {
+                    return { value, left: null, right: null };
+                }
+                if (value < node.value) {
+                    node.left = this.insertNode(node.left, value);
+                } else if (value > node.value) {
+                    node.right = this.insertNode(node.right, value);
+                }
+                return node;
+            }
+
+            executeOperation(op, values, key) {
+                if (op === 'insert' && values.length > 0) {
+                    values.forEach(v => {
+                        this.root = this.insertNode(this.root, v);
+                    });
+                } else if (op === 'search' && values.length > 0) {
+                    const found = this.searchNode(this.root, values[0]);
+                    alert(found ? 'Found!' : 'Not found');
+                } else if (op === 'clear') {
+                    this.root = null;
+                }
+                this.render();
+            }
+
+            searchNode(node, value) {
+                if (!node) return false;
+                if (value === node.value) return true;
+                if (value < node.value) return this.searchNode(node.left, value);
+                return this.searchNode(node.right, value);
+            }
+
+            render() {
+                const container = document.getElementById('visualization');
+                container.innerHTML = `
+                    <div class="description">
+                        <strong>Binary Search Tree:</strong> Ordered binary tree where left child < parent < right child.
+                    </div>
+                    <div class="tree-container" id="treeViz"></div>
+                    ${this.renderComplexity([
+                        { operation: 'Insert (average)', complexity: 'O(log n)' },
+                        { operation: 'Insert (worst)', complexity: 'O(n)' },
+                        { operation: 'Search (average)', complexity: 'O(log n)' },
+                        { operation: 'Search (worst)', complexity: 'O(n)' }
+                    ])}
+                    ${this.renderCodeSnippet('JavaScript', `// BST Insert
+function insert(root, value) {
+    if (!root) return { value, left: null, right: null };
+    if (value < root.value) {
+        root.left = insert(root.left, value);
+    } else if (value > root.value) {
+        root.right = insert(root.right, value);
+    }
+    return root;
+}`)}
+                `;
+
+                const vizContainer = document.getElementById('treeViz');
+                vizContainer.innerHTML = '';
+                if (!this.root) {
+                    vizContainer.innerHTML = '<div class="null-marker">Tree is empty</div>';
+                    return;
+                }
+                this.renderNode(vizContainer, this.root, 0, 0);
+            }
+
+            renderNode(container, node, level, position) {
+                if (!node) return;
+                
+                const nodeDiv = document.createElement('div');
+                nodeDiv.className = 'tree-node';
+                nodeDiv.style.marginTop = `${level * 80}px`;
+                nodeDiv.innerHTML = `
+                    <div class="tree-node-box">
+                        <div class="value">${node.value}</div>
+                    </div>
+                `;
+                container.appendChild(nodeDiv);
+
+                if (node.left || node.right) {
+                    const childrenDiv = document.createElement('div');
+                    childrenDiv.className = 'tree-children';
+                    childrenDiv.style.display = 'flex';
+                    childrenDiv.style.gap = '20px';
+                    container.appendChild(childrenDiv);
+                    
+                    if (node.left) this.renderNode(childrenDiv, node.left, 0, position - 1);
+                    if (node.right) this.renderNode(childrenDiv, node.right, 0, position + 1);
+                }
+            }
+        }
+
+        const visualizer = new BSTVisualizer();
+        visualizer.render();
+
+        function setupOperations() {
+            const opsContainer = document.getElementById('operations');
+            opsContainer.innerHTML = '';
+            visualizer.getOperations().forEach(op => {
+                const btn = document.createElement('button');
+                btn.className = `btn btn-${op.type || 'primary'}`;
+                btn.textContent = op.label;
+                btn.onclick = () => {
+                    const inputValue = document.getElementById('inputValue').value;
+                    const values = parseInput(inputValue, 'number');
+                    if (values.length === 0 && !['clear'].includes(op.name)) {
+                        alert('Please enter a value');
+                        return;
+                    }
+                    visualizer.executeOperation(op.name, values);
+                };
+                opsContainer.appendChild(btn);
+            });
+        }
+
+        function setupExamples() {
+            const examplesContainer = document.getElementById('examples');
+            examplesContainer.innerHTML = '';
+            visualizer.getExamples().forEach(example => {
+                const btn = document.createElement('button');
+                btn.className = 'example-btn';
+                btn.textContent = example.label;
+                btn.onclick = () => {
+                    document.getElementById('inputValue').value = example.data.join(',');
+                    visualizer.executeOperation('insert', example.data);
+                };
+                examplesContainer.appendChild(btn);
+            });
+        }
+
+        setupOperations();
+        setupExamples();
+
+        function toggleTheme() {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton();
+        }
+
+        function updateThemeButton() {
+            const btn = document.querySelector('.theme-toggle');
+            if (btn) {
+                btn.textContent = document.body.getAttribute('data-theme') === 'dark' 
+                    ? '☀️ Light Mode' 
+                    : '🌙 Dark Mode';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            updateThemeButton();
+        });
+    </script>
+</body>
+</html>
+
