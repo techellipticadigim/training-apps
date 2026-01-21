@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floating Point Binary Calculator - TechElliptica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #5897cf 0%, #a2a9e2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            padding: 48px;
+            max-width: 1200px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #1a1a1a;
+            font-size: 2.75rem;
+            margin-bottom: 16px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1.125rem;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+        }
+
+        .input-group input[type="number"] {
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fafafa;
+            color: #1f2937;
+            font-family: 'Inter', monospace;
+            width: 100%;
+        }
+
+        .input-group input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .precision-selector {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .radio-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .result-section {
+            margin-top: 30px;
+        }
+
+        .binary-display {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .bit-group {
+            margin-bottom: 25px;
+        }
+
+        .bit-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .bit-group-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bit-group-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 2px;
+        }
+
+        .bits-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .bit {
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+
+        .bit:hover {
+            transform: scale(1.1);
+        }
+
+        .bit-sign {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .bit-exponent {
+            background: #4ecdc4;
+            color: white;
+        }
+
+        .bit-mantissa {
+            background: #95e1d3;
+            color: #333;
+        }
+
+        .bit-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .full-binary {
+            background: #2d3436;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin-top: 20px;
+            letter-spacing: 2px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #1976d2;
+        }
+
+        .error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+
+        .calculation-details {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            font-size: 0.9em;
+            line-height: 1.8;
+        }
+
+        .calculation-details strong {
+            color: #667eea;
+        }
+
+        .error-info {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .error-info strong {
+            color: #856404;
+        }
+
+        .error-positive {
+            color: #28a745;
+        }
+
+        .error-negative {
+            color: #dc3545;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.025em;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4), 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔢 Floating Point Binary Calculator</h1>
+            <p>Convert decimal numbers to IEEE 754 floating-point binary representation</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="decimalInput">Enter Decimal Number:</label>
+                <input type="number" id="decimalInput" step="any" placeholder="e.g., 3.14, -42.5, 0.1">
+            </div>
+
+            <div class="precision-selector">
+                <div class="radio-group">
+                    <input type="radio" id="singlePrecision" name="precision" value="single" checked>
+                    <label for="singlePrecision">Single Precision (32-bit)</label>
+                </div>
+                <div class="radio-group">
+                    <input type="radio" id="doublePrecision" name="precision" value="double">
+                    <label for="doublePrecision">Double Precision (64-bit)</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-section" id="resultSection" style="display: none;">
+            <div class="binary-display">
+                <div class="bit-group">
+                    <div class="bit-group-title">Sign Bit (1 bit)</div>
+                    <div class="bits-container" id="signBits"></div>
+                    <div class="bit-label">0 = Positive, 1 = Negative</div>
+                </div>
+
+                <div class="bit-group">
+                    <div class="bit-group-title">Exponent Bits (<span id="exponentBitsCount">8</span> bits)</div>
+                    <div class="bits-container" id="exponentBits"></div>
+                    <div class="bit-label">Biased exponent representation</div>
+                </div>
+
+                <div class="bit-group">
+                    <div class="bit-group-title">Mantissa Bits (<span id="mantissaBitsCount">23</span> bits)</div>
+                    <div class="bits-container" id="mantissaBits"></div>
+                    <div class="bit-label">Fractional part of the number</div>
+                </div>
+
+                <div class="full-binary" id="fullBinary"></div>
+
+                <div class="calculation-details" id="calculationDetails"></div>
+                <div class="error-info" id="errorInfo" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div id="errorMessage" style="display: none;"></div>
+        
+        <div class="controls">
+            <a href="index.html" class="btn btn-secondary">
+                ← Back to Number System Converter
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 <a href="#" target="_blank">TechElliptica</a> | Developed by <strong>Vaibhav Singh</strong></p>
+            <p>All Rights Reserved © TechElliptica <a href="../../terms-and-conditions.php" target="_blank">Terms & Conditions</a></p>
+        </div>
+    </div>
+
+    <script>
+        const decimalInput = document.getElementById('decimalInput');
+        const precisionRadios = document.querySelectorAll('input[name="precision"]');
+        const resultSection = document.getElementById('resultSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const signBits = document.getElementById('signBits');
+        const exponentBits = document.getElementById('exponentBits');
+        const mantissaBits = document.getElementById('mantissaBits');
+        const fullBinary = document.getElementById('fullBinary');
+        const calculationDetails = document.getElementById('calculationDetails');
+        const errorInfo = document.getElementById('errorInfo');
+        const exponentBitsCount = document.getElementById('exponentBitsCount');
+        const mantissaBitsCount = document.getElementById('mantissaBitsCount');
+
+        function convertToFloat32(num) {
+            const buffer = new ArrayBuffer(4);
+            const view = new DataView(buffer);
+            view.setFloat32(0, num, true); // little endian
+            const bytes = new Uint8Array(buffer);
+            
+            let binary = '';
+            for (let i = 3; i >= 0; i--) {
+                binary += bytes[i].toString(2).padStart(8, '0');
+            }
+            
+            // Read back the actual stored value
+            const storedValue = view.getFloat32(0, true);
+            
+            return { binary, storedValue };
+        }
+
+        function convertToFloat64(num) {
+            const buffer = new ArrayBuffer(8);
+            const view = new DataView(buffer);
+            view.setFloat64(0, num, true); // little endian
+            const bytes = new Uint8Array(buffer);
+            
+            let binary = '';
+            for (let i = 7; i >= 0; i--) {
+                binary += bytes[i].toString(2).padStart(8, '0');
+            }
+            
+            // Read back the actual stored value
+            const storedValue = view.getFloat64(0, true);
+            
+            return { binary, storedValue };
+        }
+
+        function parseFloat32(binary) {
+            const sign = binary[0];
+            const exponent = binary.substring(1, 9);
+            const mantissa = binary.substring(9, 32);
+            
+            const signValue = sign === '1' ? -1 : 1;
+            const exponentValue = parseInt(exponent, 2);
+            const bias = 127;
+            const actualExponent = exponentValue - bias;
+            
+            let mantissaValue = 0;
+            for (let i = 0; i < mantissa.length; i++) {
+                if (mantissa[i] === '1') {
+                    mantissaValue += Math.pow(2, -(i + 1));
+                }
+            }
+            
+            let value;
+            if (exponentValue === 0) {
+                if (mantissa === '0'.repeat(23)) {
+                    value = 0;
+                } else {
+                    // Denormalized
+                    value = signValue * mantissaValue * Math.pow(2, -126);
+                }
+            } else if (exponentValue === 255) {
+                value = mantissa === '0'.repeat(23) ? Infinity : NaN;
+                if (sign === '1' && value === Infinity) value = -Infinity;
+            } else {
+                value = signValue * (1 + mantissaValue) * Math.pow(2, actualExponent);
+            }
+            
+            return {
+                sign,
+                exponent,
+                mantissa,
+                signValue,
+                exponentValue,
+                actualExponent,
+                mantissaValue,
+                value
+            };
+        }
+
+        function parseFloat64(binary) {
+            const sign = binary[0];
+            const exponent = binary.substring(1, 12);
+            const mantissa = binary.substring(12, 64);
+            
+            const signValue = sign === '1' ? -1 : 1;
+            const exponentValue = parseInt(exponent, 2);
+            const bias = 1023;
+            const actualExponent = exponentValue - bias;
+            
+            let mantissaValue = 0;
+            for (let i = 0; i < mantissa.length; i++) {
+                if (mantissa[i] === '1') {
+                    mantissaValue += Math.pow(2, -(i + 1));
+                }
+            }
+            
+            let value;
+            if (exponentValue === 0) {
+                if (mantissa === '0'.repeat(52)) {
+                    value = 0;
+                } else {
+                    // Denormalized
+                    value = signValue * mantissaValue * Math.pow(2, -1022);
+                }
+            } else if (exponentValue === 2047) {
+                value = mantissa === '0'.repeat(52) ? Infinity : NaN;
+                if (sign === '1' && value === Infinity) value = -Infinity;
+            } else {
+                value = signValue * (1 + mantissaValue) * Math.pow(2, actualExponent);
+            }
+            
+            return {
+                sign,
+                exponent,
+                mantissa,
+                signValue,
+                exponentValue,
+                actualExponent,
+                mantissaValue,
+                value
+            };
+        }
+
+        function displayBits(bits, container, className) {
+            container.innerHTML = '';
+            for (let i = 0; i < bits.length; i++) {
+                const bitDiv = document.createElement('div');
+                bitDiv.className = `bit ${className}`;
+                bitDiv.textContent = bits[i];
+                bitDiv.title = `Bit ${i + 1}`;
+                container.appendChild(bitDiv);
+            }
+        }
+
+        // Parse decimal string and calculate exact value with 30 decimal places precision
+        // Returns both the exact decimal string (30 places) and the numeric value for comparison
+        function parseDecimalAsExact(str) {
+            str = str.trim();
+            
+            // Handle scientific notation
+            if (str.includes('e') || str.includes('E')) {
+                const num = parseFloat(str);
+                return {
+                    exactDecimalStr: num.toFixed(30),
+                    exactDecimalNum: num
+                };
+            }
+            
+            // Check if it's a simple decimal like "33.2"
+            if (/^-?\d+\.\d+$/.test(str) || /^-?\d+$/.test(str)) {
+                const isNegative = str.startsWith('-');
+                const absStr = isNegative ? str.substring(1) : str;
+                
+                if (absStr.includes('.')) {
+                    const parts = absStr.split('.');
+                    const integerPart = parts[0] || '0';
+                    const decimalPart = parts[1] || '';
+                    
+                    // Calculate as exact fraction using BigInt
+                    // For "33.2": numerator = 332, denominator = 10
+                    const numerator = BigInt(integerPart) * BigInt(10) ** BigInt(decimalPart.length) + 
+                                     BigInt(decimalPart || '0');
+                    const denominator = BigInt(10) ** BigInt(decimalPart.length);
+                    
+                    // Convert to decimal string with 30 places precision
+                    // The exact value is numerator/denominator
+                    // For "33.2": 332/10 = 33.2 exactly
+                    let result = isNegative ? '-' : '';
+                    result += integerPart;
+                    result += '.';
+                    
+                    // Start with the known decimal part
+                    let decimalDigits = decimalPart;
+                    
+                    // Calculate additional decimal places to reach 30
+                    let remainder = numerator % denominator;
+                    const maxPlaces = 30;
+                    
+                    // If we already have decimal digits, we need to calculate what comes after
+                    // For "33.2", decimalPart is "2", so we have 1 place, need 29 more
+                    while (decimalDigits.length < maxPlaces && remainder !== 0n) {
+                        remainder *= 10n;
+                        const digit = remainder / denominator;
+                        decimalDigits += digit.toString();
+                        remainder = remainder % denominator;
+                    }
+                    
+                    // Pad to 30 places if needed (for exact decimals like 33.2 = 33.2000...)
+                    while (decimalDigits.length < maxPlaces) {
+                        decimalDigits += '0';
+                    }
+                    
+                    // Trim to exactly 30 places
+                    decimalDigits = decimalDigits.substring(0, maxPlaces);
+                    result += decimalDigits;
+                    
+                    // Convert to number for comparison (this will have precision limits)
+                    const exactValue = Number(numerator) / Number(denominator);
+                    
+                    return {
+                        exactDecimalStr: isNegative ? '-' + result.substring(1) : result,
+                        exactDecimalNum: isNegative ? -exactValue : exactValue
+                    };
+                } else {
+                    // Integer - exact representation
+                    const num = parseFloat(str);
+                    return {
+                        exactDecimalStr: num.toFixed(30),
+                        exactDecimalNum: num
+                    };
+                }
+            }
+            
+            // Fallback to parseFloat for complex cases
+            const num = parseFloat(str);
+            return {
+                exactDecimalStr: num.toFixed(30),
+                exactDecimalNum: num
+            };
+        }
+        
+        // Calculate the exact decimal value as a high-precision number
+        // This function calculates what the input string represents exactly
+        function getExactDecimalValue(inputStr) {
+            const str = inputStr.trim();
+            
+            // Handle scientific notation
+            if (str.includes('e') || str.includes('E')) {
+                return parseFloat(str); // Can't represent exactly
+            }
+            
+            // Parse as exact fraction
+            if (/^-?\d+\.\d+$/.test(str) || /^-?\d+$/.test(str)) {
+                const isNegative = str.startsWith('-');
+                const absStr = isNegative ? str.substring(1) : str;
+                
+                if (absStr.includes('.')) {
+                    const parts = absStr.split('.');
+                    const integerPart = parts[0] || '0';
+                    const decimalPart = parts[1] || '';
+                    
+                    // Calculate as exact fraction
+                    const numerator = BigInt(integerPart) * BigInt(10) ** BigInt(decimalPart.length) + 
+                                     BigInt(decimalPart || '0');
+                    const denominator = BigInt(10) ** BigInt(decimalPart.length);
+                    
+                    // The exact value is numerator/denominator
+                    // But we can't represent it exactly in JavaScript
+                    // However, we can calculate the error by:
+                    // 1. storedValue is the nearest float to numerator/denominator
+                    // 2. The error is: storedValue - (numerator/denominator)
+                    
+                    // To calculate this precisely, we need to work with the fraction
+                    // storedValue is what JavaScript converts numerator/denominator to
+                    // So the error is: storedValue - (what numerator/denominator mathematically equals)
+                    
+                    // Since JavaScript converts both to float64 before dividing,
+                    // we get the same as parseFloat. But the true error is:
+                    // storedValue - exact_mathematical_value
+                    
+                    // We'll calculate by converting the fraction and comparing
+                    // The key insight: storedValue IS the nearest float to numerator/denominator
+                    // So error = storedValue - (numerator/denominator as exact decimal)
+                    
+                    // Convert to number - this gives us what JavaScript calculates
+                    const fractionAsNumber = Number(numerator) / Number(denominator);
+                    const exactValue = isNegative ? -fractionAsNumber : fractionAsNumber;
+                    
+                    return {
+                        numerator: numerator,
+                        denominator: denominator,
+                        exactValue: exactValue,
+                        isNegative: isNegative
+                    };
+                } else {
+                    // Integer - exact
+                    return {
+                        numerator: BigInt(absStr),
+                        denominator: 1n,
+                        exactValue: parseFloat(str),
+                        isNegative: isNegative
+                    };
+                }
+            }
+            
+            // Fallback
+            const num = parseFloat(str);
+            return {
+                numerator: null,
+                denominator: null,
+                exactValue: num,
+                isNegative: num < 0
+            };
+        }
+        
+        // Calculate error using toPrecision for high-precision comparison
+        // This helps capture very small differences that might be lost in normal floating point arithmetic
+        function calculateError(inputStr, storedValue, isDouble) {
+            // Get the exact decimal representation (30 places) for display
+            const exact = parseDecimalAsExact(inputStr);
+            const exactDecimalStr = exact.exactDecimalStr;
+            
+            // Parse the input to get the float64 representation
+            const inputFloat64 = parseFloat(inputStr);
+            
+            // Use toPrecision to get high-precision string representations
+            // This helps capture differences that might be lost in floating point arithmetic
+            const storedValuePrecise = storedValue.toPrecision(21); // Maximum precision for double
+            const inputValuePrecise = inputFloat64.toPrecision(21);
+            
+            // Convert back to numbers for calculation (this preserves more precision)
+            const storedValueHighPrec = parseFloat(storedValuePrecise);
+            const inputValueHighPrec = parseFloat(inputValuePrecise);
+            
+            // Calculate error using high-precision values
+            let error;
+            
+            if (isDouble) {
+                // For double precision, compare storedValue with inputFloat64 using high precision
+                error = storedValueHighPrec - inputValueHighPrec;
+            } else {
+                // For single precision, compare storedValue (float32) with inputFloat64
+                error = storedValueHighPrec - inputValueHighPrec;
+            }
+            
+            return {
+                error: error,
+                exactDecimalStr: exactDecimalStr,
+                exactDecimalNum: inputFloat64,
+                storedValuePrecise: storedValuePrecise,
+                inputValuePrecise: inputValuePrecise
+            };
+        }
+
+        function calculate() {
+            const inputValue = decimalInput.value.trim();
+            
+            if (inputValue === '') {
+                resultSection.style.display = 'none';
+                errorMessage.style.display = 'none';
+                return;
+            }
+
+            const num = parseFloat(inputValue);
+            
+            if (isNaN(num)) {
+                errorMessage.style.display = 'block';
+                errorMessage.className = 'error';
+                errorMessage.textContent = 'Invalid number. Please enter a valid decimal number.';
+                resultSection.style.display = 'none';
+                return;
+            }
+
+            errorMessage.style.display = 'none';
+            resultSection.style.display = 'block';
+
+            const isDouble = document.getElementById('doublePrecision').checked;
+            let binary, parsed, storedValue;
+
+            if (isDouble) {
+                const result = convertToFloat64(num);
+                binary = result.binary;
+                storedValue = result.storedValue;
+                parsed = parseFloat64(binary);
+                exponentBitsCount.textContent = '11';
+                mantissaBitsCount.textContent = '52';
+            } else {
+                const result = convertToFloat32(num);
+                binary = result.binary;
+                storedValue = result.storedValue;
+                parsed = parseFloat32(binary);
+                exponentBitsCount.textContent = '8';
+                mantissaBitsCount.textContent = '23';
+            }
+
+            // Display bits
+            displayBits(parsed.sign, signBits, 'bit-sign');
+            displayBits(parsed.exponent, exponentBits, 'bit-exponent');
+            displayBits(parsed.mantissa, mantissaBits, 'bit-mantissa');
+
+            // Display full binary with spacing
+            const signPart = binary.substring(0, 1);
+            const expPart = binary.substring(1, isDouble ? 12 : 9);
+            const mantPart = binary.substring(isDouble ? 12 : 9);
+            
+            fullBinary.textContent = `${signPart} ${expPart} ${mantPart}`;
+
+            // Display calculation details
+            let details = `<strong>Input:</strong> ${num}<br>`;
+            details += `<strong>Sign:</strong> ${parsed.sign} (${parsed.signValue === 1 ? 'Positive' : 'Negative'})<br>`;
+            details += `<strong>Exponent (binary):</strong> ${parsed.exponent}<br>`;
+            details += `<strong>Exponent (decimal):</strong> ${parsed.exponentValue}<br>`;
+            details += `<strong>Bias:</strong> ${isDouble ? 1023 : 127}<br>`;
+            details += `<strong>Actual Exponent:</strong> ${parsed.actualExponent}<br>`;
+            details += `<strong>Mantissa (binary):</strong> ${parsed.mantissa}<br>`;
+            details += `<strong>Mantissa (decimal):</strong> ${parsed.mantissaValue.toFixed(10)}<br>`;
+            details += `<strong>Formula:</strong> ${parsed.signValue === -1 ? '-' : ''}(1 + ${parsed.mantissaValue.toFixed(6)}) × 2^${parsed.actualExponent}<br>`;
+            details += `<strong>Stored Value:</strong> ${storedValue}`;
+
+            if (isNaN(storedValue) || !isFinite(storedValue)) {
+                details += ` (${storedValue === Infinity || storedValue === -Infinity ? 'Infinity' : 'Not a Number'})`;
+            }
+
+            calculationDetails.innerHTML = details;
+
+            // Format number in × 10^power notation with superscript
+            function formatScientificNotation(num, precision = 18) {
+                if (num === 0) return '0';
+                
+                const exp = num.toExponential(precision);
+                const parts = exp.split('e');
+                const coefficient = parts[0];
+                const exponent = parseInt(parts[1]);
+                
+                // Convert exponent to superscript
+                const superscriptMap = {
+                    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+                    '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+                    '-': '⁻', '+': '⁺'
+                };
+                
+                let superscript = '';
+                const expStr = exponent.toString();
+                for (let i = 0; i < expStr.length; i++) {
+                    superscript += superscriptMap[expStr[i]] || expStr[i];
+                }
+                
+                return `${coefficient} × 10${superscript}`;
+            }
+            
+            // Calculate and display error magnitude using the specified logic:
+            // x = input number, y = x.toPrecision(40)
+            // error = "0." + y.substring(x.length)
+            if (!isNaN(storedValue) && isFinite(storedValue)) {
+                // Get the exact decimal representation (30 places) for display
+                const exact = parseDecimalAsExact(inputValue);
+                const exactDecimalStr = exact.exactDecimalStr;
+                
+                // Simple calculation:
+                // x = input number (as number)
+                const x = num;
+                
+                // y = x.toPrecision(40) (as string)
+                const y = x.toPrecision(40);
+                
+                // Convert precision value to number
+                const yNum = parseFloat(y);
+                
+                // Calculate error: Value with Precision 40 - Original value
+                const error = yNum - x;
+                
+                // Format error in 40 decimal places
+                const errorMagnitude = error.toFixed(40);
+                
+                // Convert to scientific notation (10 power format)
+                const errorScientific = formatScientificNotation(error, 40);
+                
+                let errorText = `<strong>Original Value:</strong> ${inputValue}<br>`;
+                errorText += `<strong>Value with Precision 40:</strong> ${y}<br><br>`;
+                errorText += `<strong>Error Magnitude (Scientific Notation):</strong> ${errorScientific}`;
+                
+                errorInfo.innerHTML = errorText;
+                errorInfo.style.display = 'block';
+            } else {
+                errorInfo.style.display = 'none';
+            }
+        }
+
+        // Event listeners
+        decimalInput.addEventListener('input', calculate);
+        precisionRadios.forEach(radio => {
+            radio.addEventListener('change', calculate);
+        });
+
+        // Initial calculation if there's a value
+        if (decimalInput.value) {
+            calculate();
+        }
+    </script>
+</body>
+</html>

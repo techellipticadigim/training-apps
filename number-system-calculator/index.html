@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number System Converter - TechElliptica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #5897cf 0%, #a2a9e2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.2);
+            padding: 48px;
+            max-width: 1200px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* New two-column layout styles */
+        .layout-grid {
+            display: flex;
+            gap: 28px;
+        }
+
+        .left-panel {
+            flex: 1.1;
+            background: #ffffff;
+            border: 1px solid #eef1f5;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .right-panel {
+            flex: 0.9;
+            background: #fafbff;
+            border: 1px solid #eef1f5;
+            border-radius: 14px;
+            padding: 20px;
+            min-height: 700px;
+            max-height: 700px;
+            width: 600px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar styling */
+        .right-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .right-panel::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .right-panel::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .right-panel::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .explain-title {
+            font-size: 1.375rem;
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .explain-content {
+            color: #4b5563;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .muted { color: #777; }
+
+        .divider {
+            border: 0;
+            border-top: 1px solid #e6e9ef;
+            margin: 12px 0 16px;
+        }
+
+        .div-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 16px;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .div-table th {
+            background: #f8fafc;
+            color: #374151;
+            font-weight: 600;
+            padding: 12px 10px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .div-table td {
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            text-align: center;
+            background: white;
+        }
+
+        .summary-line { margin: 6px 0; }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #1a1a1a;
+            font-size: 2.75rem;
+            margin-bottom: 16px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 1.125rem;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .converter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+        }
+
+        .input-group input {
+            padding: 16px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1.125rem;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fafafa;
+            color: #1f2937;
+            font-family: 'Inter', monospace;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .input-group input.invalid {
+            border-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .input-group input.invalid:focus {
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            min-height: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.025em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4), 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e5e9;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1024px) {
+            .layout-grid {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .converter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .placeholder-text {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Number System Converter</h1>
+            <p>Convert between Binary, Octal, Decimal, and Hexadecimal number systems</p>
+        </div>
+
+        <!-- Two-column layout -->
+        <div class="layout-grid" aria-label="Two column layout">
+            <!-- Left: Converter Form -->
+            <div class="left-panel" aria-label="Converter form panel">
+                <div class="converter-grid">
+                    <div class="input-group">
+                <label for="binary-input">Binary (Base 2)</label>
+                <input 
+                    type="text" 
+                    id="binary-input" 
+                    data-testid="binary-input"
+                    aria-label="Binary number input"
+                    placeholder="Enter binary value (0-1)"
+                    autocomplete="off"
+                >
+                <div class="error-message" id="binary-error"></div>
+                    </div>
+
+                    <div class="input-group">
+                <label for="octal-input">Octal (Base 8)</label>
+                <input 
+                    type="text" 
+                    id="octal-input" 
+                    data-testid="octal-input"
+                    aria-label="Octal number input"
+                    placeholder="Enter octal value (0-7)"
+                    autocomplete="off"
+                >
+                <div class="error-message" id="octal-error"></div>
+                    </div>
+
+                    <div class="input-group">
+                <label for="decimal-input">Decimal (Base 10)</label>
+                <input 
+                    type="text" 
+                    id="decimal-input" 
+                    data-testid="decimal-input"
+                    aria-label="Decimal number input"
+                    placeholder="Enter decimal value (0-9)"
+                    autocomplete="off"
+                >
+                <div class="error-message" id="decimal-error"></div>
+                    </div>
+
+                    <div class="input-group">
+                <label for="hex-input">Hexadecimal (Base 16)</label>
+                <input 
+                    type="text" 
+                    id="hex-input" 
+                    data-testid="hex-input"
+                    aria-label="Hexadecimal number input"
+                    placeholder="Enter hex value (0-9, A-F)"
+                    autocomplete="off"
+                >
+                <div class="error-message" id="hex-error"></div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn btn-primary" id="reset-btn" aria-label="Reset all fields">
+                        Reset All
+                    </button>
+                    <a href="floating-binary-calculator.html" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">
+                        Floating Point Binary Calculator
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Right: Explanation Panel -->
+            
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 <a href="#" target="_blank">TechElliptica</a> | Developed by <strong>Vaibhav Singh</strong></p>
+            <p>All Rights Reserved © TechElliptica <a href="../terms-and-conditions.php" target="_blank">Terms & Conditions</a></p>
+        </div>
+    </div>
+<div style="margin-left:20px;">
+     <!-- Right: Explanation Panel -->
+     <div class="right-panel" id="explain-panel" aria-live="polite" aria-label="Conversion explanation panel">
+        <h2 class="explain-title">Conversion Steps</h2>
+        <div id="explain-content" class="explain-content" data-testid="explain-content">
+            <p class="muted">Start typing in any field to see step-by-step conversion here.</p>
+        </div>
+    </div>
+</div>
+    <script>
+        const _0x143d54=_0x445c;function _0x445c(_0x619bcb,_0x3ae763){const _0x344a00=_0x344a();return _0x445c=function(_0x445c39,_0x30e283){_0x445c39=_0x445c39-0xd8;let _0x52ca54=_0x344a00[_0x445c39];return _0x52ca54;},_0x445c(_0x619bcb,_0x3ae763);}(function(_0x554a42,_0x34f89c){const _0x5b2d1f=_0x445c,_0x27a056=_0x554a42();while(!![]){try{const _0x48987c=-parseInt(_0x5b2d1f(0xfc))/0x1+parseInt(_0x5b2d1f(0xdd))/0x2*(parseInt(_0x5b2d1f(0xf8))/0x3)+parseInt(_0x5b2d1f(0x12b))/0x4+parseInt(_0x5b2d1f(0x10f))/0x5*(parseInt(_0x5b2d1f(0x100))/0x6)+parseInt(_0x5b2d1f(0x13c))/0x7*(parseInt(_0x5b2d1f(0x121))/0x8)+parseInt(_0x5b2d1f(0x123))/0x9*(-parseInt(_0x5b2d1f(0x11f))/0xa)+-parseInt(_0x5b2d1f(0xec))/0xb*(parseInt(_0x5b2d1f(0x131))/0xc);if(_0x48987c===_0x34f89c)break;else _0x27a056['push'](_0x27a056['shift']());}catch(_0x459e30){_0x27a056['push'](_0x27a056['shift']());}}}(_0x344a,0x8624e));class NumberSystemConverter{constructor(){const _0x4b9687=_0x445c;this[_0x4b9687(0x119)]={'binary':document[_0x4b9687(0x12f)](_0x4b9687(0xf2)),'octal':document[_0x4b9687(0x12f)]('octal-input'),'decimal':document[_0x4b9687(0x12f)](_0x4b9687(0xda)),'hex':document['getElementById'](_0x4b9687(0x130))},this[_0x4b9687(0xd9)]={'binary':document[_0x4b9687(0x12f)](_0x4b9687(0xe7)),'octal':document[_0x4b9687(0x12f)]('octal-error'),'decimal':document['getElementById']('decimal-error'),'hex':document[_0x4b9687(0x12f)](_0x4b9687(0x138))},this[_0x4b9687(0x101)]=![],this['init']();}[_0x143d54(0x117)](){const _0x4b2d4d=_0x143d54;Object['values'](this[_0x4b2d4d(0x119)])[_0x4b2d4d(0x107)](_0xc254ad=>{const _0x6137ce=_0x4b2d4d;_0xc254ad['addEventListener'](_0x6137ce(0xe3),_0x200a85=>this['handleInput'](_0x200a85)),_0xc254ad[_0x6137ce(0x142)](_0x6137ce(0x11c),_0x22f32c=>this['handlePaste'](_0x22f32c));}),document['getElementById'](_0x4b2d4d(0xe2))['addEventListener']('click',()=>this['resetAll']());}[_0x143d54(0x118)](_0x257b5d){const _0x28772d=_0x143d54;if(this[_0x28772d(0x101)])return;const _0x163ab8=_0x257b5d[_0x28772d(0x111)],_0x541c1a=this[_0x28772d(0xee)](_0x163ab8),_0x4326c9=_0x163ab8[_0x28772d(0x114)][_0x28772d(0x12d)]()[_0x28772d(0x106)]();if(_0x4326c9===''){this[_0x28772d(0x125)]();return;}if(!this[_0x28772d(0x11d)](_0x4326c9,_0x541c1a)){this[_0x28772d(0xf5)](_0x541c1a,_0x28772d(0x110)+_0x541c1a+'\x20input');return;}this[_0x28772d(0xf9)](),this[_0x28772d(0x139)](_0x541c1a,_0x4326c9);}['handlePaste'](_0xaaf7b6){setTimeout(()=>{const _0x481199=_0x445c;this[_0x481199(0x118)](_0xaaf7b6);},0xa);}[_0x143d54(0xee)](_0x5d74b6){const _0x3f8b60=_0x143d54,_0x1aadc1=_0x5d74b6['id'];if(_0x1aadc1[_0x3f8b60(0x112)]('binary'))return _0x3f8b60(0x10d);if(_0x1aadc1[_0x3f8b60(0x112)](_0x3f8b60(0x109)))return _0x3f8b60(0x109);if(_0x1aadc1[_0x3f8b60(0x112)](_0x3f8b60(0xe4)))return'decimal';if(_0x1aadc1[_0x3f8b60(0x112)](_0x3f8b60(0x13f)))return _0x3f8b60(0x13f);return _0x3f8b60(0xe4);}['isValidInput'](_0x1c706e,_0x215ec8){const _0x16117a=_0x143d54,_0x4c8452={'binary':/^[01]+$/,'octal':/^[0-7]+$/,'decimal':/^[0-9]+$/,'hex':/^[0-9A-F]+$/};return _0x4c8452[_0x215ec8][_0x16117a(0x136)](_0x1c706e);}[_0x143d54(0x139)](_0xf2329a,_0xaabe82){const _0x5a0801=_0x143d54;try{let _0x58f037;switch(_0xf2329a){case'binary':_0x58f037=parseInt(_0xaabe82,0x2);break;case _0x5a0801(0x109):_0x58f037=parseInt(_0xaabe82,0x8);break;case _0x5a0801(0xe4):_0x58f037=parseInt(_0xaabe82,0xa);break;case _0x5a0801(0x13f):_0x58f037=parseInt(_0xaabe82,0x10);break;default:return;}if(isNaN(_0x58f037)||_0x58f037<0x0){this[_0x5a0801(0xf5)](_0xf2329a,'Invalid\x20number');return;}this[_0x5a0801(0x101)]=!![],this['updateField']('binary',_0x58f037['toString'](0x2)),this['updateField'](_0x5a0801(0x109),_0x58f037['toString'](0x8)),this[_0x5a0801(0x104)]('decimal',_0x58f037[_0x5a0801(0xf1)](0xa)),this[_0x5a0801(0x104)](_0x5a0801(0x13f),_0x58f037['toString'](0x10)[_0x5a0801(0x106)]()),this[_0x5a0801(0xf3)](_0xf2329a,_0xaabe82,_0x58f037),this[_0x5a0801(0x101)]=![];}catch(_0x1ae036){this[_0x5a0801(0xf5)](_0xf2329a,_0x5a0801(0xfd)),this['isUpdating']=![];}}['updateField'](_0x170834,_0x42ef81){const _0x2229ad=_0x143d54;if(_0x170834===this['getCurrentSourceType']())return;const _0x2d8d7d=this['inputs'][_0x170834];_0x2d8d7d&&(_0x2d8d7d[_0x2229ad(0x114)]=_0x42ef81);}['getCurrentSourceType'](){const _0x2c71df=_0x143d54;for(const [_0xb4d5e7,_0x4be870]of Object[_0x2c71df(0x10c)](this[_0x2c71df(0x119)])){if(_0x4be870===document['activeElement'])return _0xb4d5e7;}return null;}[_0x143d54(0xf5)](_0x1be4ec,_0x25f2c8){const _0x509f1a=_0x143d54;this[_0x509f1a(0xd9)][_0x1be4ec]['textContent']=_0x25f2c8,this['inputs'][_0x1be4ec]['classList'][_0x509f1a(0xe5)](_0x509f1a(0xff));}[_0x143d54(0xf9)](){const _0x5ec08a=_0x143d54;Object['values'](this[_0x5ec08a(0xd9)])[_0x5ec08a(0x107)](_0xd83d99=>{const _0x445000=_0x5ec08a;_0xd83d99[_0x445000(0x13b)]='';}),Object['values'](this[_0x5ec08a(0x119)])[_0x5ec08a(0x107)](_0x3b2c5a=>{const _0x112705=_0x5ec08a;_0x3b2c5a['classList'][_0x112705(0x132)]('invalid');});}['clearAll'](){const _0x2fb7c5=_0x143d54;Object[_0x2fb7c5(0x13d)](this[_0x2fb7c5(0x119)])[_0x2fb7c5(0x107)](_0x51325e=>{_0x51325e['value']='';}),this[_0x2fb7c5(0xf9)]();}[_0x143d54(0xdc)](){const _0x40437d=_0x143d54;this[_0x40437d(0x125)](),this[_0x40437d(0x119)][_0x40437d(0x10d)]['focus'](),this[_0x40437d(0x141)](_0x40437d(0x12e));}[_0x143d54(0xf3)](_0x1aa681,_0x218661,_0x4013aa){const _0xfeb03=_0x143d54,_0x45b585=_0x218661[_0xfeb03(0x106)](),_0x23ca5c=_0x4013aa[_0xfeb03(0xf1)](0x2),_0x170b28=_0x4013aa[_0xfeb03(0xf1)](0x8),_0x17df1b=_0x4013aa[_0xfeb03(0xf1)](0xa),_0x2d4da9=_0x4013aa[_0xfeb03(0xf1)](0x10)[_0xfeb03(0x106)]();let _0x8f520d='';_0x8f520d+=_0xfeb03(0x128)+this['baseName'](_0x1aa681)+_0xfeb03(0x103)+_0x45b585+'</div>',_0x8f520d+=_0xfeb03(0x102)+_0x23ca5c+_0xfeb03(0x12a)+_0x170b28+_0xfeb03(0x140)+_0x17df1b+_0xfeb03(0xfa)+_0x2d4da9+_0xfeb03(0xe8),_0x8f520d+='<hr\x20class=\x22divider\x22\x20/>';switch(_0x1aa681){case _0xfeb03(0x10d):_0x8f520d+=this[_0xfeb03(0x105)](_0x45b585,_0x4013aa);break;case'octal':_0x8f520d+=this[_0xfeb03(0xe9)](_0x45b585,_0x4013aa);break;case'decimal':_0x8f520d+=this[_0xfeb03(0x116)](_0x45b585,_0x4013aa);break;case _0xfeb03(0x13f):_0x8f520d+=this['explainHexToOthers'](_0x45b585,_0x4013aa);break;}this[_0xfeb03(0x141)](_0x8f520d);}[_0x143d54(0x141)](_0x8789ce){const _0x1eadb0=_0x143d54,_0x3bf1a5=document[_0x1eadb0(0x12f)]('explain-content');if(_0x3bf1a5)_0x3bf1a5['innerHTML']=_0x8789ce;}[_0x143d54(0x13e)](_0x85da00){const _0x322532=_0x143d54;return{'binary':'Base\x202','octal':_0x322532(0x127),'decimal':_0x322532(0xd8),'hex':_0x322532(0x12c)}[_0x85da00];}['explainBinaryToOthers'](_0x3f85c1,_0x1fd5b3){const _0x2cc276=_0x143d54,_0x4707e0=[..._0x3f85c1][_0x2cc276(0xe1)](),_0x2115fb=_0x4707e0[_0x2cc276(0x113)]((_0x394339,_0xbdd248)=>_0x394339+_0x2cc276(0xfe)+_0xbdd248),_0x4d14e6=_0x4707e0['map']((_0x4e8fb7,_0x2d640c)=>''+Number(_0x4e8fb7)*0x2**_0x2d640c);let _0xde16c0=_0x2cc276(0xf0);return _0xde16c0+=_0x2cc276(0x108)+_0x3f85c1+_0x2cc276(0xdb)+_0x2115fb['reverse']()[_0x2cc276(0x10b)](_0x2cc276(0x135))+_0x2cc276(0x10e),_0xde16c0+='<p>=\x20'+_0x4d14e6[_0x2cc276(0xe1)]()[_0x2cc276(0x10b)](_0x2cc276(0x135))+'\x20=\x20<strong>'+_0x1fd5b3+_0x2cc276(0xed),_0xde16c0+=this[_0x2cc276(0x133)](_0x1fd5b3,0x8,_0x2cc276(0xfb)),_0xde16c0+=this[_0x2cc276(0x133)](_0x1fd5b3,0x10,_0x2cc276(0xf6)),_0xde16c0;}[_0x143d54(0xe9)](_0x527de3,_0x24d6bd){const _0x560c70=_0x143d54,_0x248bdf=[..._0x527de3][_0x560c70(0x113)](_0x37ca38=>Number(_0x37ca38))[_0x560c70(0xe1)](),_0x4149ce=_0x248bdf['map']((_0x26036a,_0x5428d0)=>_0x26036a+_0x560c70(0x120)+_0x5428d0),_0x5edd9c=_0x248bdf['map']((_0x531fda,_0x5bdecf)=>''+_0x531fda*0x8**_0x5bdecf);let _0x5a33de=_0x560c70(0x11a);return _0x5a33de+=_0x560c70(0x108)+_0x527de3+_0x560c70(0xdb)+_0x4149ce[_0x560c70(0xe1)]()[_0x560c70(0x10b)]('\x20+\x20')+'</p>',_0x5a33de+=_0x560c70(0x122)+_0x5edd9c[_0x560c70(0xe1)]()[_0x560c70(0x10b)]('\x20+\x20')+'\x20=\x20<strong>'+_0x24d6bd+_0x560c70(0xed),_0x5a33de+=this[_0x560c70(0x133)](_0x24d6bd,0x2,_0x560c70(0xeb)),_0x5a33de+=this['divisionTable'](_0x24d6bd,0x10,_0x560c70(0xf6)),_0x5a33de;}[_0x143d54(0x116)](_0x51472b,_0x7621ed){const _0x4696e3=_0x143d54;let _0xe65b6c='';return _0xe65b6c+=this[_0x4696e3(0x133)](_0x7621ed,0x2,'Decimal\x20→\x20Binary'),_0xe65b6c+=this[_0x4696e3(0x133)](_0x7621ed,0x8,'Decimal\x20→\x20Octal'),_0xe65b6c+=this[_0x4696e3(0x133)](_0x7621ed,0x10,'Decimal\x20→\x20Hex'),_0xe65b6c;}[_0x143d54(0x11b)](_0x4b397a,_0x25e91f){const _0x41c03c=_0x143d54,_0x596db4=_0x20707a=>parseInt(_0x20707a,0x10),_0x334736=[..._0x4b397a[_0x41c03c(0x106)]()][_0x41c03c(0x113)](_0x596db4)[_0x41c03c(0xe1)](),_0x21821e=_0x334736[_0x41c03c(0x113)]((_0x1e3175,_0x18e7ea)=>_0x1e3175+'×16^'+_0x18e7ea),_0x267cd6=_0x334736[_0x41c03c(0x113)]((_0x185a02,_0x57ca26)=>''+_0x185a02*0x10**_0x57ca26);let _0x143ca1=_0x41c03c(0x13a);return _0x143ca1+=_0x41c03c(0x108)+_0x4b397a['toUpperCase']()+_0x41c03c(0xdb)+_0x21821e[_0x41c03c(0xe1)]()[_0x41c03c(0x10b)](_0x41c03c(0x135))+_0x41c03c(0x10e),_0x143ca1+=_0x41c03c(0x122)+_0x267cd6['reverse']()[_0x41c03c(0x10b)](_0x41c03c(0x135))+_0x41c03c(0x126)+_0x25e91f+_0x41c03c(0xed),_0x143ca1+=this[_0x41c03c(0x133)](_0x25e91f,0x2,'Decimal\x20→\x20Binary'),_0x143ca1+=this[_0x41c03c(0x133)](_0x25e91f,0x8,_0x41c03c(0xfb)),_0x143ca1;}[_0x143d54(0x133)](_0x19bd9c,_0x41ef89,_0x33077e){const _0x5300c3=_0x143d54;if(_0x19bd9c===0x0)return _0x5300c3(0xea)+_0x33077e+_0x5300c3(0xf4);const _0x2bcacf='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';let _0x4b7481=_0x19bd9c;const _0x38fcf1=[];while(_0x4b7481>0x0){const _0x2bdc17=_0x4b7481%_0x41ef89;_0x38fcf1['push']({'q':_0x4b7481,'base':_0x41ef89,'rem':_0x2bdc17,'digit':_0x2bcacf[_0x2bdc17]}),_0x4b7481=Math[_0x5300c3(0xef)](_0x4b7481/_0x41ef89);}const _0x4a5486=_0x38fcf1[_0x5300c3(0x113)](_0x48f016=>_0x48f016['digit'])[_0x5300c3(0xe1)]()[_0x5300c3(0x10b)]('');let _0x2491aa=_0x5300c3(0xea)+_0x33077e+_0x5300c3(0x115);return _0x2491aa+=_0x5300c3(0x137)+'<thead><tr><th>Quotient</th><th>÷\x20Base</th><th>Remainder</th><th>Digit</th></tr></thead><tbody>'+_0x38fcf1['map'](_0x8a596e=>_0x5300c3(0x134)+_0x8a596e['q']+_0x5300c3(0x124)+_0x8a596e[_0x5300c3(0xe0)]+_0x5300c3(0x124)+_0x8a596e['rem']+_0x5300c3(0x124)+_0x8a596e[_0x5300c3(0x11e)]+_0x5300c3(0xe6))[_0x5300c3(0x10b)]('')+_0x5300c3(0x10a),_0x2491aa+=_0x5300c3(0x129)+_0x4a5486+_0x5300c3(0xed),_0x2491aa;}}function _0x344a(){const _0x431679=['handleInput','inputs','<h3>Octal\x20→\x20Decimal</h3>','explainHexToOthers','paste','isValidInput','digit','30YYzYTX','×8^','8WPkqTU','<p>=\x20','1366416LqkFTE','</td><td>','clearAll','\x20=\x20<strong>','Base\x208','<div\x20class=\x22summary-line\x22><strong>Input\x20(','<p><strong>Read\x20remainders\x20upward\x20→\x20','\x20|\x20Oct\x20','611956syuiDR','Base\x2016','trim','<p\x20class=\x22muted\x22>Start\x20typing\x20in\x20any\x20field\x20to\x20see\x20step-by-step\x20conversion\x20here.</p>','getElementById','hex-input','48aYjUDy','remove','divisionTable','<tr><td>','\x20+\x20','test','<table\x20class=\x22div-table\x22\x20aria-label=\x22division\x20steps\x20table\x22>','hex-error','convertFrom','<h3>Hex\x20→\x20Decimal</h3>','textContent','5255873NnoZAe','values','baseName','hex','\x20|\x20Dec\x20','setExplainHTML','addEventListener','Base\x2010','errors','decimal-input','\x20=\x20','resetAll','24872PfhNFJ','keydown','querySelector','base','reverse','reset-btn','input','decimal','add','</td></tr>','binary-error','</div>','explainOctalToOthers','<h3>','Decimal\x20→\x20Binary','1812129OJAeGk','</strong></p>','getInputType','floor','<h3>Binary\x20→\x20Decimal</h3>','toString','binary-input','renderExplanation','</h3><p>0\x20in\x20any\x20base\x20is\x200.</p>','showError','Decimal\x20→\x20Hex','Escape','177nwYCKn','clearErrors','\x20|\x20Hex\x20','Decimal\x20→\x20Octal','115508ptNmzC','Conversion\x20error','×2^','invalid','425514dEQyXf','isUpdating','<div\x20class=\x22summary-line\x22><strong>Results:</strong>\x20Bin\x20','):</strong>\x20','updateField','explainBinaryToOthers','toUpperCase','forEach','<p>','octal','</tbody></table>','join','entries','binary','</p>','10IWLWaj','Invalid\x20','target','includes','map','value','</h3>','explainDecimalToOthers','init'];_0x344a=function(){return _0x431679;};return _0x344a();}document[_0x143d54(0x142)]('DOMContentLoaded',()=>{new NumberSystemConverter();}),document[_0x143d54(0x142)](_0x143d54(0xde),_0x3fda94=>{const _0x3955c6=_0x143d54;_0x3fda94['key']===_0x3955c6(0xf7)&&document[_0x3955c6(0xdf)]('#reset-btn')['click']();});
+    </script>
+</body>
+</html>
