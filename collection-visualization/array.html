@@ -13,97 +13,61 @@
         <div class="header">
             <a href="index.html" class="back-link">← Back to Index</a>
             <h1>📋 Array</h1>
-            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+            </div>
         </div>
 
         <div class="main-content">
-            <div class="control-panel">
-                <div class="control-group">
-                    <h3>Language / Array Type</h3>
-                    <div class="input-group">
-                        <select id="languageType" onchange="visualizer.onLanguageChange()">
-                            <option value="java">Java - Static Array</option>
-                            <option value="javascript">JavaScript - Dynamic Array</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="control-group" id="arraySizeGroup" style="display: none;">
-                    <h3>Array Size (Java)</h3>
-                    <div class="input-group">
-                        <label for="arraySize">Size</label>
-                        <input type="number" id="arraySize" min="1" max="100" value="10" onchange="visualizer.setArraySize()">
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <h3>Data Type</h3>
-                    <div class="input-group">
-                        <select id="dataType">
-                            <option value="number">Number</option>
-                            <option value="string">String</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <h3>Input</h3>
-                    <div class="input-group" id="inputGroupJava" style="display: none;">
-                        <label for="inputIndex">Index (optional - leave empty for batch add)</label>
-                        <input type="number" id="inputIndex" placeholder="e.g., 0 (optional)" min="0">
-                        <small style="color: var(--text-light); font-size: 0.8rem;">Leave empty to add multiple values at once</small>
-                    </div>
-                    <div class="input-group">
-                        <label for="inputValue" id="inputValueLabel">Value (comma/space/newline separated)</label>
-                        <input type="text" id="inputValue" placeholder="e.g., 1,2,3,4,5,6">
-                        <small style="color: var(--text-light); font-size: 0.8rem;" id="inputHint">Enter multiple values separated by commas</small>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <h3>Operations</h3>
-                    <div class="operations" id="operations"></div>
-                </div>
-
-                <div class="control-group">
-                    <h3>View Options</h3>
-                    <div class="memory-toggle">
-                        <label>
-                            <input type="checkbox" id="showMemory" onchange="visualizer.toggleMemoryView()">
-                            Show Memory View
-                        </label>
-                    </div>
-                    <div class="memory-toggle">
-                        <label>
-                            <input type="checkbox" id="showDetails" onchange="visualizer.toggleDetails()">
-                            Show Computation Details
-                        </label>
-                    </div>
-                </div>
-
-                <div class="control-group">
-                    <h3>Examples</h3>
-                    <div class="examples" id="examples"></div>
-                </div>
-
-                <div class="control-group">
-                    <h3>Export</h3>
-                    <div class="export-buttons">
-                        <button class="btn btn-secondary" onclick="exportJSON(visualizer.getState(), 'array-state.json')">💾 JSON</button>
-                    </div>
-                </div>
-            </div>
-
             <div class="visualization-area">
                 <div id="visualization"></div>
                 
-                <div class="code-editor-section">
-                    <div class="code-editor-header">
-                        <h3 id="codeEditorTitle">📝 Java Code Editor</h3>
-                        <button class="btn btn-primary" onclick="runJavaCode()">▶ Run Code</button>
+                <div class="code-terminal-wrapper">
+                    <div class="code-editor-section">
+                        <div class="code-editor-header">
+                            <div class="language-tabs">
+                                <button class="language-tab active" data-language="java" onclick="switchLanguageTab('java')">
+                                    ☕ Java
+                                </button>
+                                <!-- Future tabs can be added here -->
+                                <!-- <button class="language-tab" data-language="python" onclick="switchLanguageTab('python')">
+                                    🐍 Python
+                                </button>
+                                <button class="language-tab" data-language="javascript" onclick="switchLanguageTab('javascript')">
+                                    📜 JavaScript
+                                </button> -->
+                            </div>
+                            <button class="btn btn-primary" onclick="runCode()">▶ Run Code</button>
+                        </div>
+                        <div class="code-editor-tabs-content">
+                            <div class="code-editor-tab-pane active" id="tab-java">
+                                <div id="javaCodeEditor" class="monaco-editor-container"></div>
+                            </div>
+                            <!-- Future tab panes can be added here -->
+                            <!-- <div class="code-editor-tab-pane" id="tab-python">
+                                <div id="pythonCodeEditor" class="monaco-editor-container"></div>
+                            </div>
+                            <div class="code-editor-tab-pane" id="tab-javascript">
+                                <div id="javascriptCodeEditor" class="monaco-editor-container"></div>
+                            </div> -->
+                        </div>
+                        <div id="codeOutput" class="code-output"></div>
                     </div>
-                    <div id="javaCodeEditor" class="monaco-editor-container"></div>
-                    <div id="codeOutput" class="code-output"></div>
+                    
+                    <div class="terminal-section">
+                        <div class="terminal-header">
+                            <div class="terminal-title">
+                                <span class="terminal-icon">💻</span>
+                                <span>Terminal</span>
+                            </div>
+                            <div class="terminal-controls">
+                                <button class="terminal-font-btn" onclick="decreaseTerminalFont()" title="Decrease Font Size">A-</button>
+                                <button class="terminal-font-btn" onclick="increaseTerminalFont()" title="Increase Font Size">A+</button>
+                                <button class="terminal-clear-btn" onclick="clearTerminal()" title="Clear Terminal">🗑️</button>
+                            </div>
+                        </div>
+                        <div id="terminal" class="terminal"></div>
+                    </div>
                 </div>
                 
                 <div id="complexitySection" class="complexity-section"></div>
@@ -115,7 +79,8 @@
     <!-- Monaco Editor JS -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.min.js"></script>
     <script>
-        let javaEditor = null;
+        let editors = {}; // Store editors for each language
+        let currentLanguage = 'java'; // Current active language tab
         
         // Initialize Monaco Editor after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
@@ -124,14 +89,43 @@
             
             // Initialize Monaco Editor
             require(['vs/editor/editor.main'], function () {
-                const editorElement = document.getElementById('javaCodeEditor');
+                initializeEditor('java');
+                
+                // Update editor theme when page theme changes
+                const observer = new MutationObserver(() => {
+                    Object.values(editors).forEach(editor => {
+                        if (editor) {
+                            const theme = document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs';
+                            monaco.editor.setTheme(theme);
+                        }
+                    });
+                });
+                observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+                
+                // Run the default code once after editor is initialized
+                setTimeout(() => {
+                    if (typeof runCode === 'function' && editors['java']) {
+                        // Set default language to java
+                        if (visualizer) {
+                            visualizer.language = 'java';
+                        }
+                        runCode();
+                    }
+                }, 800); // Delay to ensure editor and language setup are complete
+            });
+            
+            // Function to initialize editor for a specific language
+            function initializeEditor(language) {
+                const editorId = language + 'CodeEditor';
+                const editorElement = document.getElementById(editorId);
                 if (!editorElement) {
-                    console.error('Code editor element not found');
+                    console.error(`Code editor element not found for ${language}`);
                     return;
                 }
                 
-                javaEditor = monaco.editor.create(editorElement, {
-                value: `// Write your Java array code here
+                // Default code templates for each language
+                const codeTemplates = {
+                    java: `// Write your Java array code here
 public class ArrayDemo {
     public static void main(String[] args) {
         // Example: Create an array
@@ -153,158 +147,235 @@ public class ArrayDemo {
         }
     }
 }`,
-                language: 'java',
-                theme: document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs',
-                automaticLayout: true,
-                fontSize: 14,
-                minimap: { enabled: true },
-                scrollBeyondLastLine: false,
-                wordWrap: 'on',
-                formatOnPaste: true,
-                formatOnType: true
-            });
-            
-                // Add Enter key listener to run code automatically
-                let lastRunTime = 0;
-                const RUN_DEBOUNCE_MS = 800; // Minimum time between runs (800ms debounce)
-                let runTimeout = null;
-                
-                // Listen for keydown events
-                javaEditor.onKeyDown(function(e) {
-                    // Check if Enter key is pressed (without modifiers)
-                    if (e.keyCode === monaco.KeyCode.Enter && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
-                        // Clear any pending timeout
-                        if (runTimeout) {
-                            clearTimeout(runTimeout);
-                        }
-                        
-                        // Wait a bit for the newline to be inserted, then run code
-                        runTimeout = setTimeout(function() {
-                            const now = Date.now();
-                            // Only run if enough time has passed since last run (debounce)
-                            if (now - lastRunTime >= RUN_DEBOUNCE_MS) {
-                                lastRunTime = now;
-                                runJavaCode();
-                            }
-                        }, 100); // Small delay to allow Enter to process first
-                    }
-                });
-                
-                // Also support Ctrl+Enter (or Cmd+Enter on Mac) as an alternative
-                javaEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
-                    if (runTimeout) {
-                        clearTimeout(runTimeout);
-                    }
-                    runJavaCode();
-                }, 'runCodeCtrl');
-            
-                // Update editor theme when page theme changes
-                const observer = new MutationObserver(() => {
-                    if (javaEditor) {
-                        const theme = document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs';
-                        monaco.editor.setTheme(theme);
-                    }
-                });
-                observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
-                
-                // Run the default code once after editor is initialized
-                setTimeout(() => {
-                    if (typeof runJavaCode === 'function' && javaEditor) {
-                        // Make sure language is set before running
-                        const langSelect = document.getElementById('languageType');
-                        if (langSelect && visualizer) {
-                            visualizer.language = langSelect.value;
-                        }
-                        runJavaCode();
-                    }
-                }, 800); // Delay to ensure editor and language setup are complete
-            });
-        });
-        
-        // Function to update code editor language and example code
-        function updateCodeEditorLanguage(language) {
-            if (!javaEditor) return;
-            
-            const editorTitle = document.getElementById('codeEditorTitle');
-            if (editorTitle) {
-                editorTitle.textContent = language === 'java' ? '📝 Java Code Editor' : '📝 JavaScript Code Editor';
-            }
-            
-            // Update Monaco editor language
-            monaco.editor.setModelLanguage(javaEditor.getModel(), language === 'java' ? 'java' : 'javascript');
-            
-            // Update default code based on language
-            const javaCode = `// Write your Java array code here
-public class ArrayDemo {
-    public static void main(String[] args) {
-        // Example: Create an array
-        int[] arr = new int[5];
-        
-        // Add values to array
-        arr[0] = 10;
-        arr[1] = 20;
-        arr[2] = 30;
-        arr[3] = 40;
-        arr[4] = 50;
-        
-        // Access array elements
-        System.out.println("First element: " + arr[0]);
-        
-        // Iterate through array
-        for (int i = 0; i < arr.length; i++) {
-            System.out.println("arr[" + i + "] = " + arr[i]);
-        }
-    }
-}`;
+                    python: `# Write your Python array code here
+# Example: Create a list
+arr = [10, 20, 30, 40, 50]
 
-            const javascriptCode = `// Write your JavaScript array code here
+# Access array elements
+print("First element:", arr[0])
+
+# Iterate through array
+for i, value in enumerate(arr):
+    print(f"arr[{i}] = {value}")`,
+                    javascript: `// Write your JavaScript array code here
 // Example: Create an array
 const arr = [10, 20, 30, 40, 50];
-
-// Or create empty array and add values
-// const arr = [];
-// arr.push(10);
-// arr.push(20);
-// arr.push(30);
 
 // Access array elements
 console.log("First element: " + arr[0]);
 
 // Iterate through array
 for (let i = 0; i < arr.length; i++) {
-    console.log("arr[" + i + "] = " + arr[i]);
-}
-
-// Or use forEach
-arr.forEach((value, index) => {
-    console.log(\`arr[\${index}] = \${value}\`);
-});`;
-
-            // Only update code if editor is empty or has default code
-            const currentCode = javaEditor.getValue();
-            if (currentCode.trim() === '' || 
-                currentCode.includes('Write your Java array code here') || 
-                currentCode.includes('Write your JavaScript array code here')) {
-                javaEditor.setValue(language === 'java' ? javaCode : javascriptCode);
+    console.log(\`arr[\${i}] = \${arr[i]}\`);
+}`
+                };
+                
+                const editor = monaco.editor.create(editorElement, {
+                    value: codeTemplates[language] || codeTemplates.java,
+                    language: language,
+                    theme: document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs',
+                    automaticLayout: true,
+                    fontSize: 14,
+                    minimap: { enabled: true },
+                    scrollBeyondLastLine: false,
+                    wordWrap: 'on',
+                    formatOnPaste: true,
+                    formatOnType: true
+                });
+                
+                // Add Enter key listener to run code automatically
+                let lastRunTime = 0;
+                const RUN_DEBOUNCE_MS = 800;
+                let runTimeout = null;
+                
+                editor.onKeyDown(function(e) {
+                    if (e.keyCode === monaco.KeyCode.Enter && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+                        if (runTimeout) {
+                            clearTimeout(runTimeout);
+                        }
+                        runTimeout = setTimeout(function() {
+                            const now = Date.now();
+                            if (now - lastRunTime >= RUN_DEBOUNCE_MS) {
+                                lastRunTime = now;
+                                runCode();
+                            }
+                        }, 100);
+                    }
+                });
+                
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
+                    if (runTimeout) {
+                        clearTimeout(runTimeout);
+                    }
+                    runCode();
+                }, 'runCodeCtrl');
+                
+                editors[language] = editor;
+            }
+            
+            // Function to switch language tabs
+            window.switchLanguageTab = function(language) {
+                currentLanguage = language;
+                
+                // Update tab buttons
+                document.querySelectorAll('.language-tab').forEach(tab => {
+                    if (tab.dataset.language === language) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+                
+                // Update tab panes
+                document.querySelectorAll('.code-editor-tab-pane').forEach(pane => {
+                    if (pane.id === 'tab-' + language) {
+                        pane.classList.add('active');
+                    } else {
+                        pane.classList.remove('active');
+                    }
+                });
+                
+                // Initialize editor if not already initialized
+                if (!editors[language]) {
+                    initializeEditor(language);
+                }
+                
+                // Update editor layout when switching tabs
+                setTimeout(() => {
+                    if (editors[language]) {
+                        editors[language].layout();
+                    }
+                }, 100);
+            };
+        });
+        
+        // Function to update code editor language and example code
+        function updateCodeEditorLanguage(language) {
+            // This function is kept for backward compatibility
+            // The language switching is now handled by tabs
+            if (currentLanguage !== language && editors[language]) {
+                switchLanguageTab(language);
             }
         }
         
-        // Function to run Java code
-        function runJavaCode() {
-            if (!javaEditor) {
+        // Terminal functions
+        window.displayTerminalOutput = function(outputs) {
+            const terminal = document.getElementById('terminal');
+            if (!terminal) return;
+            
+            // Remove placeholder if exists
+            const placeholder = terminal.querySelector('.terminal-line[style*="color: #666"]');
+            if (placeholder) {
+                placeholder.remove();
+            }
+            
+            if (outputs && outputs.length > 0) {
+                outputs.forEach(output => {
+                    const line = document.createElement('div');
+                    // Check if output is an error message
+                    const isError = output.includes('Exception') || 
+                                   output.includes('IndexOutOfBoundsException') || 
+                                   output.includes('RangeError') ||
+                                   output.includes('Error:');
+                    line.className = isError ? 'terminal-line terminal-error' : 'terminal-line';
+                    line.textContent = output;
+                    terminal.appendChild(line);
+                });
+                // Auto scroll to bottom
+                terminal.scrollTop = terminal.scrollHeight;
+            } else {
+                // Show placeholder if no output
+                if (terminal.children.length === 0) {
+                    terminal.innerHTML = '<div class="terminal-line" style="color: #666; font-style: italic;">No output yet. Run your code to see System.out.println output here.</div>';
+                }
+            }
+        };
+        
+        window.displayTerminalError = function(errorMessage) {
+            const terminal = document.getElementById('terminal');
+            if (!terminal) return;
+            
+            // Remove placeholder if exists
+            const placeholder = terminal.querySelector('.terminal-line[style*="color: #666"]');
+            if (placeholder) {
+                placeholder.remove();
+            }
+            
+            const errorLine = document.createElement('div');
+            errorLine.className = 'terminal-line terminal-error';
+            errorLine.textContent = errorMessage;
+            terminal.appendChild(errorLine);
+            
+            // Auto scroll to bottom
+            terminal.scrollTop = terminal.scrollHeight;
+        };
+        
+        window.clearTerminal = function() {
+            const terminal = document.getElementById('terminal');
+            if (terminal) {
+                terminal.innerHTML = '';
+            }
+        };
+        
+        // Terminal font size functions
+        window.increaseTerminalFont = function() {
+            const terminal = document.getElementById('terminal');
+            if (!terminal) return;
+            
+            const currentSize = parseInt(getComputedStyle(terminal).fontSize) || 13;
+            const newSize = Math.min(currentSize + 2, 24); // Max 24px
+            terminal.style.fontSize = newSize + 'px';
+            localStorage.setItem('terminalFontSize', newSize);
+        };
+        
+        window.decreaseTerminalFont = function() {
+            const terminal = document.getElementById('terminal');
+            if (!terminal) return;
+            
+            const currentSize = parseInt(getComputedStyle(terminal).fontSize) || 13;
+            const newSize = Math.max(currentSize - 2, 10); // Min 10px
+            terminal.style.fontSize = newSize + 'px';
+            localStorage.setItem('terminalFontSize', newSize);
+        };
+        
+        // Initialize terminal with placeholder and restore font size
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                const terminal = document.getElementById('terminal');
+                if (terminal) {
+                    // Restore saved font size
+                    const savedFontSize = localStorage.getItem('terminalFontSize');
+                    if (savedFontSize) {
+                        terminal.style.fontSize = savedFontSize + 'px';
+                    }
+                    
+                    // Show placeholder if empty
+                    if (terminal.children.length === 0) {
+                        terminal.innerHTML = '<div class="terminal-line" style="color: #666; font-style: italic;">No output yet. Run your code to see System.out.println output here.</div>';
+                    }
+                }
+            }, 100);
+        });
+        
+        // Function to run code (works with current active language)
+        function runCode() {
+            // Clear terminal on each run
+            clearTerminal();
+            const editor = editors[currentLanguage];
+            if (!editor) {
                 alert('Code editor is not ready yet. Please wait a moment.');
                 return;
             }
             
-            const code = javaEditor.getValue();
+            const code = editor.getValue();
             const outputDiv = document.getElementById('codeOutput');
             
             // Clear previous output
             outputDiv.innerHTML = '<div class="code-output-header">Output:</div>';
             
             try {
-                // Get current language from visualizer
-                const currentLanguage = visualizer.language || 'java';
+                // Get current language from visualizer (for array type, not code editor language)
+                const arrayLanguage = visualizer.language || 'java';
                 
                 // Parse code and extract array operations
                 const arrayInfo = parseCode(code, currentLanguage);
@@ -312,6 +383,9 @@ arr.forEach((value, index) => {
                 if (arrayInfo.error) {
                     // Show error in output
                     outputDiv.innerHTML += `<div class="error-message">❌ ${arrayInfo.error}</div>`;
+                    
+                    // Show error in terminal
+                    displayTerminalError(arrayInfo.error);
                     
                     // Also show error in visualization area
                     visualizer.errorMessage = arrayInfo.error;
@@ -326,122 +400,163 @@ arr.forEach((value, index) => {
                 // Display parsed information
                 let outputHTML = '<div class="code-analysis">';
                 
+                // Clear previous arrays and store all detected arrays
+                visualizer.arrays = [];
+                
                 if (arrayInfo.arrayDeclarations.length > 0) {
                     outputHTML += '<h4>📊 Detected Arrays:</h4><ul>';
                     arrayInfo.arrayDeclarations.forEach(arr => {
-                        outputHTML += `<li>${arr.name}: ${arr.type}[] size = ${arr.size}</li>`;
-                        
-                        // Update visualizer if this is the main array (including empty arrays)
-                        if (arr.values !== undefined && arr.values !== null) {
-                            // Extract values and update the visualizer
-                            const values = arr.values;
+                        if (arr.dimensions === 2) {
+                            // Handle 2D array
+                            outputHTML += `<li>${arr.name}: ${arr.type}[][] size = ${arr.rows}x${arr.cols}</li>`;
                             
-                            // Set the visualizer language to match current language (don't override)
-                            // visualizer.language should already be set from the dropdown
+                            visualizer.arrays.push({
+                                name: arr.name,
+                                type: arr.type,
+                                dimensions: 2,
+                                rows: arr.rows,
+                                cols: arr.cols,
+                                data: arr.values || [],
+                                language: arrayLanguage
+                            });
+                        } else {
+                            // Handle 1D array
+                            outputHTML += `<li>${arr.name}: ${arr.type}[] size = ${arr.size}</li>`;
                             
-                            // For JavaScript, arrays are dynamic - update capacity dynamically
-                            // For Java, respect the declared size
-                            if (currentLanguage === 'javascript') {
-                                // JavaScript: dynamic array - set capacity based on actual values
-                                let actualSize = 0;
-                                if (Array.isArray(values)) {
-                                    actualSize = values.length;
-                                } else if (Object.keys(values).length > 0) {
-                                    actualSize = Math.max(...Object.keys(values).map(k => parseInt(k)).filter(k => !isNaN(k))) + 1;
-                                }
-                                // For JavaScript, set capacity to actual size (0 for empty arrays)
-                                visualizer.capacity = actualSize;
-                                visualizer.data = new Array(visualizer.capacity);
-                            } else {
-                                // Java: use declared size
-                                visualizer.capacity = arr.size;
-                                visualizer.data = new Array(arr.size);
+                            // Process each array and add to arrays collection
+                            if (arr.values !== undefined && arr.values !== null) {
+                                const values = arr.values;
+                                let capacity = 0;
+                                let size = 0;
+                                let data = [];
                                 
-                                // Update capacity in UI if size input exists
-                                const sizeInput = document.getElementById('arraySize');
-                                if (sizeInput) {
-                                    sizeInput.value = arr.size;
-                                }
-                            }
-                            
-                            // Handle both array and object-based values
-                            let maxIndex = -1;
-                            
-                            if (Array.isArray(values)) {
-                                // If values is an array (from curly brace initialization or JavaScript array literal)
-                                values.forEach((val, idx) => {
-                                    if (idx >= 0 && idx < visualizer.capacity) {
-                                        visualizer.data[idx] = val;
-                                        maxIndex = Math.max(maxIndex, idx);
-                                    } else if (idx < 0 || (currentLanguage === 'java' && idx >= visualizer.capacity)) {
-                                        // Out of bounds - this shouldn't happen if parsing is correct, but check anyway
-                                        const errorMsg = currentLanguage === 'java' 
-                                            ? `IndexOutOfBoundsException: Index ${idx} out of bounds for length ${visualizer.capacity}`
-                                            : `RangeError: Index ${idx} out of bounds`;
-                                        visualizer.errorMessage = errorMsg;
+                                // Determine capacity and size based on language
+                                if (arrayLanguage === 'javascript') {
+                                    // JavaScript: dynamic array - set capacity based on actual values
+                                    if (Array.isArray(values)) {
+                                        size = values.length;
+                                        capacity = size;
+                                    } else if (Object.keys(values).length > 0) {
+                                        const maxIdx = Math.max(...Object.keys(values).map(k => parseInt(k)).filter(k => !isNaN(k)));
+                                        size = maxIdx >= 0 ? maxIdx + 1 : 0;
+                                        capacity = size;
                                     }
-                                });
-                            } else {
-                                // If values is an object (from individual assignments)
-                                for (let key in values) {
-                                    const idx = parseInt(key);
-                                    if (!isNaN(idx) && idx >= 0) {
-                                        // For JavaScript, dynamically grow capacity if needed
-                                        if (currentLanguage === 'javascript' && idx >= visualizer.capacity) {
-                                            const newCapacity = Math.max(visualizer.capacity * 2, idx + 1);
-                                            const newData = new Array(newCapacity);
-                                            for (let i = 0; i < visualizer.capacity; i++) {
-                                                newData[i] = visualizer.data[i];
-                                            }
-                                            visualizer.data = newData;
-                                            visualizer.capacity = newCapacity;
-                                        }
-                                        
-                                        if (idx < visualizer.capacity) {
-                                            visualizer.data[idx] = values[idx];
+                                    data = new Array(capacity);
+                                } else {
+                                    // Java: use declared size
+                                    capacity = arr.size;
+                                    size = 0;
+                                    data = new Array(capacity);
+                                }
+                                
+                                // Handle both array and object-based values
+                                let maxIndex = -1;
+                                
+                                if (Array.isArray(values)) {
+                                    // If values is an array (from curly brace initialization or JavaScript array literal)
+                                    values.forEach((val, idx) => {
+                                        if (idx >= 0 && idx < capacity) {
+                                            data[idx] = val;
                                             maxIndex = Math.max(maxIndex, idx);
-                                        } else if (currentLanguage === 'java') {
-                                            // Only check bounds for Java
-                                            const errorMsg = `IndexOutOfBoundsException: Index ${idx} out of bounds for length ${visualizer.capacity}`;
+                                        } else if (idx < 0 || (arrayLanguage === 'java' && idx >= capacity)) {
+                                            const errorMsg = arrayLanguage === 'java' 
+                                                ? `IndexOutOfBoundsException: Index ${idx} out of bounds for length ${capacity}`
+                                                : `RangeError: Index ${idx} out of bounds`;
                                             visualizer.errorMessage = errorMsg;
+                                            displayTerminalError(errorMsg);
                                         }
-                                    } else if (!isNaN(idx) && idx < 0) {
-                                        // Negative index error
-                                        const errorMsg = currentLanguage === 'java' 
-                                            ? `IndexOutOfBoundsException: Index ${idx} out of bounds`
-                                            : `RangeError: Index ${idx} out of bounds`;
-                                        visualizer.errorMessage = errorMsg;
+                                    });
+                                } else {
+                                    // If values is an object (from individual assignments)
+                                    for (let key in values) {
+                                        const idx = parseInt(key);
+                                        if (!isNaN(idx) && idx >= 0) {
+                                            // For JavaScript, dynamically grow capacity if needed
+                                            if (arrayLanguage === 'javascript' && idx >= capacity) {
+                                                const newCapacity = Math.max(capacity * 2, idx + 1);
+                                                const newData = new Array(newCapacity);
+                                                for (let i = 0; i < capacity; i++) {
+                                                    newData[i] = data[i];
+                                                }
+                                                data = newData;
+                                                capacity = newCapacity;
+                                            }
+                                            
+                                            if (idx < capacity) {
+                                                data[idx] = values[idx];
+                                                maxIndex = Math.max(maxIndex, idx);
+                                            } else if (arrayLanguage === 'java') {
+                                                const errorMsg = `IndexOutOfBoundsException: Index ${idx} out of bounds for length ${capacity}`;
+                                                visualizer.errorMessage = errorMsg;
+                                                displayTerminalError(errorMsg);
+                                            }
+                                        } else if (!isNaN(idx) && idx < 0) {
+                                            const errorMsg = arrayLanguage === 'java' 
+                                                ? `IndexOutOfBoundsException: Index ${idx} out of bounds`
+                                                : `RangeError: Index ${idx} out of bounds`;
+                                            visualizer.errorMessage = errorMsg;
+                                            displayTerminalError(errorMsg);
+                                        }
                                     }
                                 }
-                            }
-                            
-                            // If there was an error, render it and return
-                            if (visualizer.errorMessage) {
-                                visualizer.render();
-                                return;
-                            }
-                            
-                            // Set size to maxIndex + 1 if values exist, otherwise 0
-                            visualizer.size = maxIndex >= 0 ? maxIndex + 1 : 0;
-                            
-                            // For JavaScript empty arrays, ensure capacity is also 0 (no blocks shown)
-                            if (currentLanguage === 'javascript' && visualizer.size === 0 && (Array.isArray(values) ? values.length === 0 : Object.keys(values).length === 0)) {
-                                visualizer.capacity = 0;
-                                visualizer.data = [];
-                            }
-                            
-                            visualizer.render();
-                        } else if (arr.values !== undefined && arr.values !== null && currentLanguage === 'javascript') {
-                            // Handle empty JavaScript arrays that were declared but not populated
-                            if ((Array.isArray(arr.values) && arr.values.length === 0) || (typeof arr.values === 'object' && Object.keys(arr.values).length === 0)) {
-                                visualizer.capacity = 0;
-                                visualizer.size = 0;
-                                visualizer.data = [];
-                                visualizer.render();
+                                
+                                // Set size to maxIndex + 1 if values exist, otherwise 0
+                                size = maxIndex >= 0 ? maxIndex + 1 : 0;
+                                
+                                // For JavaScript empty arrays, ensure capacity is also 0
+                                if (arrayLanguage === 'javascript' && size === 0 && (Array.isArray(values) ? values.length === 0 : Object.keys(values).length === 0)) {
+                                    capacity = 0;
+                                    data = [];
+                                }
+                                
+                                // Add array to collection
+                                visualizer.arrays.push({
+                                    name: arr.name,
+                                    type: arr.type,
+                                    size: size,
+                                    capacity: capacity,
+                                    data: data,
+                                    dimensions: 1,
+                                    language: arrayLanguage
+                                });
+                            } else if (arr.values !== undefined && arr.values !== null && arrayLanguage === 'javascript') {
+                                // Handle empty JavaScript arrays
+                                if ((Array.isArray(arr.values) && arr.values.length === 0) || (typeof arr.values === 'object' && Object.keys(arr.values).length === 0)) {
+                                    visualizer.arrays.push({
+                                        name: arr.name,
+                                        type: arr.type,
+                                        size: 0,
+                                        capacity: 0,
+                                        data: [],
+                                        dimensions: 1,
+                                        language: arrayLanguage
+                                    });
+                                }
+                            } else {
+                                // Empty array declaration (Java)
+                                visualizer.arrays.push({
+                                    name: arr.name,
+                                    type: arr.type,
+                                    size: 0,
+                                    capacity: arr.size,
+                                    data: new Array(arr.size),
+                                    dimensions: 1,
+                                    language: arrayLanguage
+                                });
                             }
                         }
                     });
                     outputHTML += '</ul>';
+                    
+                            // If there was an error, render it and return
+                            if (visualizer.errorMessage) {
+                                displayTerminalError(visualizer.errorMessage);
+                                visualizer.render();
+                                return;
+                            }
+                    
+                    // Render all arrays
+                    visualizer.render();
                 }
                 
                 if (arrayInfo.operations.length > 0) {
@@ -459,6 +574,9 @@ arr.forEach((value, index) => {
                 outputHTML += '</div>';
                 outputDiv.innerHTML += outputHTML;
                 
+                // Display output in terminal
+                displayTerminalOutput(arrayInfo.output);
+                
                 // Show success message
                 outputDiv.innerHTML += '<div class="success-message">✅ Code parsed successfully! Array visualization updated.</div>';
                 
@@ -471,6 +589,9 @@ arr.forEach((value, index) => {
             } catch (error) {
                 const errorMsg = `Error: ${error.message}`;
                 outputDiv.innerHTML += `<div class="error-message">❌ ${errorMsg}</div>`;
+                
+                // Show error in terminal
+                displayTerminalError(errorMsg);
                 
                 // Show error in visualization as well
                 visualizer.errorMessage = errorMsg;
@@ -491,33 +612,207 @@ arr.forEach((value, index) => {
                 // Remove comments
                 code = code.replace(/\/\/.*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
                 
-                // Find array initialization with curly braces: int[] marks = {10,30,40,50,8};
-                const arrayInitRegex = /(\w+)\s*\[\]\s*(\w+)\s*=\s*\{([^}]+)\}/g;
+                // Find 2D array initialization: int[][] arr = {{1,2,3}, {4,5,6}}; or int[][] ar3 = { arr, arr1 };
+                const array2DInitRegex = /(\w+)\s*\[\]\s*\[\]\s*(\w+)\s*=\s*\{([^}]+)\}/g;
                 let match;
+                while ((match = array2DInitRegex.exec(code)) !== null) {
+                    const type = match[1];
+                    const name = match[2];
+                    const fullMatch = match[0];
+                    
+                    // Extract the content between outer braces
+                    const contentMatch = fullMatch.match(/=\s*\{([\s\S]+)\}/);
+                    if (!contentMatch) continue;
+                    
+                    const valuesStr = contentMatch[1].trim();
+                    
+                    // Check if it's array references (e.g., { arr, arr1 }) or nested braces (e.g., {{1,2}, {3,4}})
+                    const hasNestedBraces = valuesStr.includes('{');
+                    const rows = [];
+                    
+                    if (hasNestedBraces) {
+                        // Parse nested braces: {{1,2,3}, {4,5,6}}
+                        let currentRow = '';
+                        let braceDepth = 0;
+                        let inRow = false;
+                        
+                        for (let i = 0; i < valuesStr.length; i++) {
+                            const char = valuesStr[i];
+                            if (char === '{') {
+                                braceDepth++;
+                                if (braceDepth === 1) {
+                                    currentRow = '';
+                                    inRow = true;
+                                    continue;
+                                }
+                            } else if (char === '}') {
+                                braceDepth--;
+                                if (braceDepth === 0 && inRow) {
+                                    // Parse row values with type checking
+                                    const rowValues = [];
+                                    const rowValueStrings = currentRow.split(',');
+                                    const isStringType = type.toLowerCase() === 'string';
+                                    
+                                    for (let v of rowValueStrings) {
+                                        const trimmed = v.trim();
+                                        if (trimmed === '') continue;
+                                        
+                                        const isQuotedString = trimmed.match(/^["'].*["']$/);
+                                        const num = Number(trimmed);
+                                        const isNumber = !isNaN(num) && trimmed !== '' && !isQuotedString;
+                                        
+                                        // Type validation
+                                        if (isStringType) {
+                                            if (isQuotedString) {
+                                                rowValues.push(trimmed.replace(/["']/g, ''));
+                                            } else if (isNumber) {
+                                                const errorMsg = language === 'java' 
+                                                    ? `Type mismatch: cannot convert int to String in array ${name}`
+                                                    : `TypeError: Cannot assign number to string array`;
+                                                result.error = errorMsg;
+                                                return result;
+                                            } else {
+                                                rowValues.push(trimmed);
+                                            }
+                                        } else {
+                                            if (isQuotedString) {
+                                                const errorMsg = language === 'java' 
+                                                    ? `Type mismatch: cannot convert String to ${type} in array ${name}`
+                                                    : `TypeError: Cannot assign string to number array`;
+                                                result.error = errorMsg;
+                                                return result;
+                                            } else if (isNumber) {
+                                                rowValues.push(num);
+                                            } else {
+                                                const parsedNum = Number(trimmed);
+                                                if (!isNaN(parsedNum)) {
+                                                    rowValues.push(parsedNum);
+                                                } else {
+                                                    rowValues.push(trimmed);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    rows.push(rowValues);
+                                    currentRow = '';
+                                    inRow = false;
+                                    continue;
+                                }
+                            }
+                            if (inRow && braceDepth > 0) {
+                                currentRow += char;
+                            }
+                        }
+                    } else {
+                        // Parse array references: { arr, arr1 }
+                        // Store as strings first, will be resolved in second pass
+                        const arrayRefs = valuesStr.split(',').map(ref => ref.trim()).filter(ref => ref !== '');
+                        
+                        // Store array names as strings - they'll be resolved in second pass
+                        arrayRefs.forEach(refName => {
+                            rows.push(refName); // Store as string reference
+                        });
+                    }
+                    
+                    if (rows.length > 0) {
+                        // If it's array references, cols will be determined after resolution
+                        // For nested braces, calculate maxCols now
+                        const maxCols = hasNestedBraces 
+                            ? Math.max(...rows.map(r => Array.isArray(r) ? r.length : 0))
+                            : 0; // Will be set in second pass
+                        
+                        result.arrayDeclarations.push({
+                            type: type,
+                            name: name,
+                            size: rows.length,
+                            dimensions: 2,
+                            rows: rows.length,
+                            cols: maxCols,
+                            values: rows,
+                            needsResolution: !hasNestedBraces // Flag for second pass
+                        });
+                        
+                        result.operations.push(`Initialization: ${name} = ${hasNestedBraces ? '{{...}, ...}' : '{array refs}'} (2D array)`);
+                    }
+                }
+                
+                // Find 1D array initialization with curly braces: int[] marks = {10,30,40,50,8};
+                const arrayInitRegex = /(\w+)\s*\[\]\s*(\w+)\s*=\s*\{([^}]+)\}/g;
                 while ((match = arrayInitRegex.exec(code)) !== null) {
                     const type = match[1];
                     const name = match[2];
                     const valuesStr = match[3].trim();
                     
-                    // Parse values from the curly braces
-                    const values = valuesStr.split(',').map(v => {
+                    // Skip if this was already processed as 2D array
+                    const existing2D = result.arrayDeclarations.find(a => a.name === name && a.dimensions === 2);
+                    if (existing2D) continue;
+                    
+                    // Parse values from the curly braces with type checking
+                    const values = [];
+                    const valueStrings = valuesStr.split(',');
+                    
+                    for (let v of valueStrings) {
                         const trimmed = v.trim();
-                        // Try to parse as number first
+                        if (trimmed === '') continue;
+                        
+                        // Check if array type is String
+                        const isStringType = type.toLowerCase() === 'string';
+                        
+                        // Check if value is a string literal (quoted)
+                        const isQuotedString = trimmed.match(/^["'].*["']$/);
+                        
+                        // Try to parse as number
                         const num = Number(trimmed);
-                        if (!isNaN(num) && trimmed !== '') {
-                            return num;
+                        const isNumber = !isNaN(num) && trimmed !== '' && !isQuotedString;
+                        
+                        // Type validation
+                        if (isStringType) {
+                            // String array - values must be strings
+                            if (isQuotedString) {
+                                values.push(trimmed.replace(/["']/g, ''));
+                            } else if (isNumber) {
+                                // Number in string array - type mismatch error
+                                const errorMsg = language === 'java' 
+                                    ? `Type mismatch: cannot convert int to String in array ${name}`
+                                    : `TypeError: Cannot assign number to string array`;
+                                result.error = errorMsg;
+                                result.operations.push(`Initialization: ${name} = {...} ❌ TYPE MISMATCH`);
+                                return result;
+                            } else {
+                                // Unquoted string - might be a variable name, treat as string
+                                values.push(trimmed);
+                            }
+                        } else {
+                            // Number array (int, double, etc.) - values must be numbers
+                            if (isQuotedString) {
+                                // String in number array - type mismatch error
+                                const errorMsg = language === 'java' 
+                                    ? `Type mismatch: cannot convert String to ${type} in array ${name}`
+                                    : `TypeError: Cannot assign string to number array`;
+                                result.error = errorMsg;
+                                result.operations.push(`Initialization: ${name} = {...} ❌ TYPE MISMATCH`);
+                                return result;
+                            } else if (isNumber) {
+                                values.push(num);
+                            } else {
+                                // Could be a variable or expression - try to parse as number
+                                const parsedNum = Number(trimmed);
+                                if (!isNaN(parsedNum)) {
+                                    values.push(parsedNum);
+                                } else {
+                                    // Unknown value - might be a variable reference
+                                    values.push(trimmed);
+                                }
+                            }
                         }
-                        // Otherwise treat as string (remove quotes if present)
-                        if (trimmed.match(/^".*"$/)) {
-                            return trimmed.replace(/"/g, '');
-                        }
-                        return trimmed;
-                    }).filter(v => v !== ''); // Remove empty values
+                    }
                     
                     result.arrayDeclarations.push({
                         type: type,
                         name: name,
                         size: values.length,
+                        dimensions: 1,
                         values: values
                     });
                     
@@ -526,13 +821,49 @@ arr.forEach((value, index) => {
                 }
                 
                 if (language === 'java') {
-                    // Find array declarations: int[] arr = new int[size];
+                    // Find 2D array declarations: int[][] arr = new int[rows][cols];
+                    const array2DDeclRegex = /(\w+)\s*\[\]\s*\[\]\s*(\w+)\s*=\s*new\s+(\w+)\s*\[\s*(\d+)\s*\]\s*\[\s*(\d+)\s*\]/g;
+                    while ((match = array2DDeclRegex.exec(code)) !== null) {
+                        const type = match[1];
+                        const name = match[2];
+                        const arrayType = match[3];
+                        const rows = parseInt(match[4]);
+                        const cols = parseInt(match[5]);
+                        
+                        // Check if this array was already declared
+                        const existingDecl = result.arrayDeclarations.find(a => a.name === name);
+                        if (!existingDecl) {
+                            // Initialize empty 2D array
+                            const empty2D = [];
+                            for (let i = 0; i < rows; i++) {
+                                empty2D.push(new Array(cols));
+                            }
+                            
+                            result.arrayDeclarations.push({
+                                type: type,
+                                name: name,
+                                size: rows,
+                                dimensions: 2,
+                                rows: rows,
+                                cols: cols,
+                                values: empty2D
+                            });
+                            
+                            result.operations.push(`Declaration: ${name} = new ${arrayType}[${rows}][${cols}] (2D array)`);
+                        }
+                    }
+                    
+                    // Find 1D array declarations: int[] arr = new int[size];
                     const arrayDeclRegex = /(\w+)\s*\[\]\s*(\w+)\s*=\s*new\s+(\w+)\s*\[\s*(\d+)\s*\]/g;
                     while ((match = arrayDeclRegex.exec(code)) !== null) {
                         const type = match[1];
                         const name = match[2];
                         const arrayType = match[3];
                         const size = parseInt(match[4]);
+                        
+                        // Skip if this was already processed as 2D array
+                        const existing2D = result.arrayDeclarations.find(a => a.name === name && a.dimensions === 2);
+                        if (existing2D) continue;
                         
                         // Check if this array was already declared with curly braces
                         const existingDecl = result.arrayDeclarations.find(a => a.name === name);
@@ -541,6 +872,7 @@ arr.forEach((value, index) => {
                                 type: type,
                                 name: name,
                                 size: size,
+                                dimensions: 1,
                                 values: []
                             });
                         }
@@ -622,16 +954,156 @@ arr.forEach((value, index) => {
                     }
                 }
                 
-                // Find array assignments: arr[index] = value;
+                // Second pass: Resolve 2D arrays that reference 1D arrays (e.g., int[][] ar3 = { arr, arr1 };)
+                // This needs to happen after all 1D arrays are parsed
+                result.arrayDeclarations.forEach(arr => {
+                    if (arr.dimensions === 2 && arr.needsResolution && arr.values && Array.isArray(arr.values)) {
+                        // This 2D array was initialized with array references, resolve them now
+                        const resolvedRows = [];
+                        arr.values.forEach(row => {
+                            if (typeof row === 'string') {
+                                // This is an array reference - find the referenced 1D array
+                                const refArray = result.arrayDeclarations.find(a => a.name === row && a.dimensions === 1);
+                                if (refArray && refArray.values) {
+                                    // Check type compatibility
+                                    const arrType = arr.type.toLowerCase();
+                                    const refType = refArray.type.toLowerCase();
+                                    
+                                    // Check if types match (both string or both number types)
+                                    const arrIsString = arrType === 'string';
+                                    const refIsString = refType === 'string';
+                                    
+                                    if (arrIsString !== refIsString) {
+                                        const errorMsg = language === 'java' 
+                                            ? `Type mismatch: cannot convert ${refArray.type}[] to ${arr.type}[][] in array ${arr.name}`
+                                            : `TypeError: Cannot assign ${refType} array to ${arrType} array`;
+                                        result.error = errorMsg;
+                                        return;
+                                    }
+                                    
+                                    let rowValues = [];
+                                    if (Array.isArray(refArray.values)) {
+                                        rowValues = [...refArray.values]; // Copy array
+                                    } else if (typeof refArray.values === 'object') {
+                                        const keys = Object.keys(refArray.values)
+                                            .map(k => parseInt(k))
+                                            .filter(k => !isNaN(k))
+                                            .sort((a, b) => a - b);
+                                        if (keys.length > 0) {
+                                            const maxKey = Math.max(...keys);
+                                            rowValues = new Array(maxKey + 1);
+                                            keys.forEach(k => {
+                                                rowValues[k] = refArray.values[k];
+                                            });
+                                        }
+                                    }
+                                    resolvedRows.push(rowValues);
+                                } else {
+                                    // Array reference not found - keep as empty row
+                                    resolvedRows.push([]);
+                                }
+                            } else if (Array.isArray(row)) {
+                                // Already resolved (nested braces case)
+                                resolvedRows.push(row);
+                            }
+                        });
+                        
+                        // Update the array with resolved values
+                        if (resolvedRows.length > 0 && !result.error) {
+                            const maxCols = Math.max(...resolvedRows.map(r => r ? r.length : 0));
+                            arr.values = resolvedRows;
+                            arr.cols = maxCols;
+                            delete arr.needsResolution; // Clear flag
+                        }
+                    }
+                });
+                
+                // Find 2D array assignments: arr[row][col] = value;
+                const assign2DRegex = /(\w+)\s*\[\s*(-?\d+)\s*\]\s*\[\s*(-?\d+)\s*\]\s*=\s*([^;]+);/g;
+                while ((match = assign2DRegex.exec(code)) !== null) {
+                    const arrName = match[1];
+                    const row = parseInt(match[2]);
+                    const col = parseInt(match[3]);
+                    const value = match[4].trim();
+                    
+                    // Find the array declaration
+                    const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
+                    if (arrDecl && arrDecl.dimensions === 2) {
+                        // Check row bounds
+                        if (row < 0 || row >= arrDecl.rows) {
+                            const errorMsg = language === 'java' 
+                                ? `IndexOutOfBoundsException: Index [${row}] out of bounds for array ${arrName}[${arrDecl.rows}]`
+                                : `RangeError: Index [${row}] out of bounds`;
+                            result.error = errorMsg;
+                            result.operations.push(`Assignment: ${arrName}[${row}][${col}] = ${value.trim()} ❌ OUT OF BOUNDS`);
+                            return result; // Stop parsing and return error
+                        }
+                        
+                        // Check column bounds against actual row length
+                        const rowLength = arrDecl.values && arrDecl.values[row] ? arrDecl.values[row].length : 0;
+                        if (col < 0 || col >= rowLength) {
+                            const errorMsg = language === 'java' 
+                                ? `IndexOutOfBoundsException: Index [${row}][${col}] out of bounds for length ${rowLength}`
+                                : `RangeError: Index [${row}][${col}] out of bounds for length ${rowLength}`;
+                            result.error = errorMsg;
+                            result.operations.push(`Assignment: ${arrName}[${row}][${col}] = ${value.trim()} ❌ OUT OF BOUNDS`);
+                            return result; // Stop parsing and return error
+                        }
+                        
+                        // Evaluate value (simple numbers or string literals) with type checking
+                        let parsedValue = value;
+                        const isStringType = arrDecl.type.toLowerCase() === 'string';
+                        const isQuotedString = value.match(/^".*"$/);
+                        const isNumber = value.match(/^\d+$/) && !isQuotedString;
+                        
+                        // Type validation
+                        if (isStringType && isNumber) {
+                            const errorMsg = language === 'java' 
+                                ? `Type mismatch: cannot convert int to String in array ${arrName}`
+                                : `TypeError: Cannot assign number to string array`;
+                            result.error = errorMsg;
+                            result.operations.push(`Assignment: ${arrName}[${row}][${col}] = ${value.trim()} ❌ TYPE MISMATCH`);
+                            return result;
+                        } else if (!isStringType && isQuotedString) {
+                            const errorMsg = language === 'java' 
+                                ? `Type mismatch: cannot convert String to ${arrDecl.type} in array ${arrName}`
+                                : `TypeError: Cannot assign string to number array`;
+                            result.error = errorMsg;
+                            result.operations.push(`Assignment: ${arrName}[${row}][${col}] = ${value.trim()} ❌ TYPE MISMATCH`);
+                            return result;
+                        }
+                        
+                        if (isNumber) {
+                            parsedValue = parseInt(value);
+                        } else if (isQuotedString) {
+                            parsedValue = value.replace(/"/g, '');
+                        }
+                        
+                        // Ensure the row exists
+                        if (!arrDecl.values[row]) {
+                            arrDecl.values[row] = new Array(arrDecl.cols);
+                        }
+                        
+                        // Store value
+                        arrDecl.values[row][col] = parsedValue;
+                        result.operations.push(`Assignment: ${arrName}[${row}][${col}] = ${parsedValue}`);
+                    }
+                }
+                
+                // Find 1D array assignments: arr[index] = value;
                 const assignRegex = /(\w+)\s*\[\s*(-?\d+)\s*\]\s*=\s*([^;]+);/g;
                 while ((match = assignRegex.exec(code)) !== null) {
                     const arrName = match[1];
                     const index = parseInt(match[2]);
                     const value = match[3].trim();
                     
+                    // Skip if this was already processed as 2D array assignment
+                    const is2DAssignment = code.substring(match.index).match(/^\w+\s*\[\s*\d+\s*\]\s*\[\s*\d+\s*\]/);
+                    if (is2DAssignment) continue;
+                    
                     // Find the array declaration
                     const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
-                    if (arrDecl) {
+                    if (arrDecl && arrDecl.dimensions !== 2) {
                         // Check for out-of-bounds access
                         if (index < 0 || index >= arrDecl.size) {
                             const errorMsg = language === 'java' 
@@ -642,11 +1114,32 @@ arr.forEach((value, index) => {
                             return result; // Stop parsing and return error
                         }
                         
-                        // Evaluate value (simple numbers or string literals)
+                        // Evaluate value (simple numbers or string literals) with type checking
                         let parsedValue = value;
-                        if (value.match(/^\d+$/)) {
+                        const isStringType = arrDecl.type.toLowerCase() === 'string';
+                        const isQuotedString = value.match(/^".*"$/);
+                        const isNumber = value.match(/^\d+$/) && !isQuotedString;
+                        
+                        // Type validation
+                        if (isStringType && isNumber) {
+                            const errorMsg = language === 'java' 
+                                ? `Type mismatch: cannot convert int to String in array ${arrName}`
+                                : `TypeError: Cannot assign number to string array`;
+                            result.error = errorMsg;
+                            result.operations.push(`Assignment: ${arrName}[${index}] = ${value.trim()} ❌ TYPE MISMATCH`);
+                            return result;
+                        } else if (!isStringType && isQuotedString) {
+                            const errorMsg = language === 'java' 
+                                ? `Type mismatch: cannot convert String to ${arrDecl.type} in array ${arrName}`
+                                : `TypeError: Cannot assign string to number array`;
+                            result.error = errorMsg;
+                            result.operations.push(`Assignment: ${arrName}[${index}] = ${value.trim()} ❌ TYPE MISMATCH`);
+                            return result;
+                        }
+                        
+                        if (isNumber) {
                             parsedValue = parseInt(value);
-                        } else if (value.match(/^".*"$/)) {
+                        } else if (isQuotedString) {
                             parsedValue = value.replace(/"/g, '');
                         }
                         
@@ -685,95 +1178,421 @@ arr.forEach((value, index) => {
                 }
                 
                 // Find print statements (Java: System.out.println, JavaScript: console.log)
+                // But skip those inside for loops - they'll be handled by loop detection
+                const forLoopRegex = /for\s*\([^)]*\)\s*\{[^}]*\}/g;
+                const forLoopBlocks = code.match(forLoopRegex) || [];
+                
                 const printRegex = language === 'java' 
                     ? /System\.out\.println\s*\([^)]+\)/g
                     : /console\.log\s*\([^)]+\)/g;
                 while ((match = printRegex.exec(code)) !== null) {
                     const printStmt = match[0];
+                    const printIndex = match.index;
+                    
+                    // Check if this print statement is inside a for loop
+                    let isInsideLoop = false;
+                    forLoopBlocks.forEach(loopBlock => {
+                        const loopStart = code.indexOf(loopBlock);
+                        const loopEnd = loopStart + loopBlock.length;
+                        if (printIndex >= loopStart && printIndex <= loopEnd) {
+                            isInsideLoop = true;
+                        }
+                    });
+                    
+                    // Skip print statements inside loops - they'll be handled separately
+                    if (isInsideLoop) {
+                        continue;
+                    }
                     
                     // Try to extract the value being printed
                     const printContent = printStmt.match(/\(([^)]+)\)/);
                     if (printContent) {
                         const content = printContent[1];
                         
-                        // Check if it's an array access
-                        const arrAccessMatch = content.match(/(\w+)\s*\[\s*(-?\d+)\s*\]/);
-                        if (arrAccessMatch) {
-                            const arrName = arrAccessMatch[1];
-                            const idx = parseInt(arrAccessMatch[2]);
+                        // Helper function to get array value (handles both 1D and 2D)
+                        const getArrayValue = (arrName, indices) => {
                             const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
-                            if (arrDecl) {
-                                // Check for out-of-bounds access
+                            if (!arrDecl) return null;
+                            
+                            if (indices.length === 1) {
+                                // 1D array access: arr[0]
+                                const idx = indices[0];
+                                if (arrDecl.dimensions === 2) {
+                                    // This is a 2D array accessed as 1D - return row reference
+                                    return arrDecl.values[idx];
+                                }
                                 if (idx < 0 || idx >= arrDecl.size) {
-                                    const errorMsg = language === 'java' 
-                                        ? `IndexOutOfBoundsException: Index ${idx} out of bounds for length ${arrDecl.size}`
-                                        : `RangeError: Index ${idx} out of bounds for length ${arrDecl.size}`;
-                                    result.error = errorMsg;
-                                    result.output.push(language === 'java' 
-                                        ? `Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index ${idx} out of bounds for length ${arrDecl.size}`
-                                        : `RangeError: Index ${idx} out of bounds for length ${arrDecl.size}`);
-                                    return result; // Stop parsing and return error
+                                    return { error: `IndexOutOfBoundsException: Index ${idx} out of bounds for length ${arrDecl.size}` };
+                                }
+                                if (Array.isArray(arrDecl.values)) {
+                                    return arrDecl.values[idx];
+                                }
+                                return arrDecl.values[idx];
+                            } else if (indices.length === 2) {
+                                // 2D array access: arr[0][1]
+                                const row = indices[0];
+                                const col = indices[1];
+                                if (arrDecl.dimensions !== 2) {
+                                    return { error: `Not a 2D array: ${arrName}` };
                                 }
                                 
-                                // Handle both array and object-based values
-                                const value = Array.isArray(arrDecl.values) 
-                                    ? arrDecl.values[idx] 
-                                    : arrDecl.values[idx];
-                                if (value !== undefined) {
-                                    result.output.push(`${arrName}[${idx}] = ${value}`);
+                                // Check row bounds
+                                if (row < 0 || row >= arrDecl.rows) {
+                                    return { error: `IndexOutOfBoundsException: Index [${row}] out of bounds for array ${arrName}[${arrDecl.rows}]` };
                                 }
+                                
+                                // Check if row exists and get its actual length
+                                if (!arrDecl.values || !arrDecl.values[row]) {
+                                    return { error: `IndexOutOfBoundsException: Index [${row}] out of bounds for array ${arrName}` };
+                                }
+                                
+                                const rowLength = arrDecl.values[row].length;
+                                
+                                // Check column bounds against actual row length
+                                if (col < 0 || col >= rowLength) {
+                                    return { error: `IndexOutOfBoundsException: Index [${row}][${col}] out of bounds for length ${rowLength}` };
+                                }
+                                
+                                return arrDecl.values[row][col];
                             }
-                        } else {
-                            // Remove quotes and template literals
-                            let output = content.replace(/["']/g, '').replace(/`/g, '');
-                            // Handle template literals like `arr[${i}] = ${arr[i]}`
-                            output = output.replace(/\$\{([^}]+)\}/g, (match, expr) => {
-                                // Try to evaluate simple expressions
-                                const arrMatch = expr.match(/(\w+)\s*\[\s*(\d+)\s*\]/);
-                                if (arrMatch) {
-                                    const arrName = arrMatch[1];
-                                    const idx = parseInt(arrMatch[2]);
-                                    const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
-                                    if (arrDecl) {
-                                        const value = Array.isArray(arrDecl.values) 
-                                            ? arrDecl.values[idx] 
-                                            : arrDecl.values[idx];
-                                        return value !== undefined ? value : '';
+                            return null;
+                        };
+                        
+                        // Check if content contains concatenation (+ operator)
+                        if (content.includes('+')) {
+                            // Handle string concatenation like "text" + arr[0] or "text" + ar3[0][1]
+                            let output = '';
+                            
+                            // Split by + to handle concatenation
+                            const parts = content.split(/\s*\+\s*/);
+                            parts.forEach(part => {
+                                part = part.trim();
+                                
+                                // Check if it's a 2D array access: arr[0][1]
+                                const arr2DAccessMatch = part.match(/(\w+)\s*\[\s*(-?\d+)\s*\]\s*\[\s*(-?\d+)\s*\]/);
+                                if (arr2DAccessMatch) {
+                                    const arrName = arr2DAccessMatch[1];
+                                    const row = parseInt(arr2DAccessMatch[2]);
+                                    const col = parseInt(arr2DAccessMatch[3]);
+                                    const value = getArrayValue(arrName, [row, col]);
+                                    if (value && value.error) {
+                                        result.error = value.error;
+                                        result.output.push(value.error);
+                                        return;
+                                    }
+                                    output += (value !== undefined && value !== null ? String(value) : '');
+                                } 
+                                // Check if it's a 1D array access: arr[0]
+                                else {
+                                    const arrAccessMatch = part.match(/(\w+)\s*\[\s*(-?\d+)\s*\]/);
+                                    if (arrAccessMatch) {
+                                        const arrName = arrAccessMatch[1];
+                                        const idx = parseInt(arrAccessMatch[2]);
+                                        const value = getArrayValue(arrName, [idx]);
+                                        if (value && value.error) {
+                                            result.error = value.error;
+                                            result.output.push(value.error);
+                                            return;
+                                        }
+                                        output += (value !== undefined && value !== null ? String(value) : '');
+                                    } else {
+                                        // Remove quotes and add to output
+                                        const cleaned = part.replace(/^["']|["']$/g, '').replace(/`/g, '');
+                                        // Handle template literals
+                                        const templateProcessed = cleaned.replace(/\$\{([^}]+)\}/g, (match, expr) => {
+                                            // Check for 2D array access in template
+                                            const arr2DMatch = expr.match(/(\w+)\s*\[\s*(\d+)\s*\]\s*\[\s*(\d+)\s*\]/);
+                                            if (arr2DMatch) {
+                                                const arrName = arr2DMatch[1];
+                                                const row = parseInt(arr2DMatch[2]);
+                                                const col = parseInt(arr2DMatch[3]);
+                                                const value = getArrayValue(arrName, [row, col]);
+                                                return (value !== undefined && value !== null ? String(value) : '');
+                                            }
+                                            const arrMatch = expr.match(/(\w+)\s*\[\s*(\d+)\s*\]/);
+                                            if (arrMatch) {
+                                                const arrName = arrMatch[1];
+                                                const idx = parseInt(arrMatch[2]);
+                                                const value = getArrayValue(arrName, [idx]);
+                                                return (value !== undefined && value !== null ? String(value) : '');
+                                            }
+                                            return expr;
+                                        });
+                                        output += templateProcessed;
                                     }
                                 }
-                                return expr;
                             });
-                            result.output.push(output);
+                            
+                            if (output && !result.error) {
+                                result.output.push(output);
+                            }
+                        } else {
+                            // No concatenation - check if it's a 2D array access
+                            const arr2DAccessMatch = content.match(/(\w+)\s*\[\s*(-?\d+)\s*\]\s*\[\s*(-?\d+)\s*\]/);
+                            if (arr2DAccessMatch) {
+                                const arrName = arr2DAccessMatch[1];
+                                const row = parseInt(arr2DAccessMatch[2]);
+                                const col = parseInt(arr2DAccessMatch[3]);
+                                const value = getArrayValue(arrName, [row, col]);
+                                
+                                if (value && value.error) {
+                                    result.error = value.error;
+                                    result.output.push(language === 'java' 
+                                        ? `Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: ${value.error}`
+                                        : value.error);
+                                    return result;
+                                }
+                                
+                                if (value !== undefined && value !== null) {
+                                    result.output.push(String(value));
+                                } else {
+                                    result.output.push('null');
+                                }
+                            }
+                            // Check if it's a 1D array access
+                            else {
+                                const arrAccessMatch = content.match(/(\w+)\s*\[\s*(-?\d+)\s*\]/);
+                                if (arrAccessMatch) {
+                                    const arrName = arrAccessMatch[1];
+                                    const idx = parseInt(arrAccessMatch[2]);
+                                    const value = getArrayValue(arrName, [idx]);
+                                    
+                                    if (value && value.error) {
+                                        result.error = value.error;
+                                        const arrDecl = result.arrayDeclarations.find(a => a.name === arrName);
+                                        const size = arrDecl ? arrDecl.size : 0;
+                                        result.output.push(language === 'java' 
+                                            ? `Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index ${idx} out of bounds for length ${size}`
+                                            : value.error);
+                                        return result;
+                                    }
+                                    
+                                    if (value !== undefined && value !== null) {
+                                        result.output.push(String(value));
+                                    } else {
+                                        result.output.push('null');
+                                    }
+                                } else {
+                                    // Plain string or other content
+                                    const cleaned = content.replace(/^["']|["']$/g, '').replace(/`/g, '');
+                                    if (cleaned.trim()) {
+                                        result.output.push(cleaned);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
                 
-                // Find for loops that iterate arrays
-                const forLoopRegex = /for\s*\([^)]*\)\s*\{[^}]*\}/g;
-                if (forLoopRegex.test(code)) {
+                // Find for loops that iterate arrays - handle println statements inside loops
+                const forLoopMatches = code.match(/for\s*\([^)]*\)\s*\{[^}]*\}/g);
+                let loopOutputGenerated = false;
+                
+                if (forLoopMatches && forLoopMatches.length > 0) {
                     result.operations.push('Loop iteration detected');
                     
-                    // Generate output for loop
-                    result.arrayDeclarations.forEach(arr => {
-                        if (arr.values) {
-                            if (Array.isArray(arr.values)) {
-                                // Handle array-based values (from curly brace initialization)
-                                arr.values.forEach((val, idx) => {
-                                    if (val !== undefined) {
-                                        result.output.push(`${arr.name}[${idx}] = ${val}`);
+                    // Check if there's a System.out.println inside the loop
+                    forLoopMatches.forEach(loopBlock => {
+                        // Extract println statements from inside the loop
+                        const printlnInLoop = loopBlock.match(/System\.out\.println\s*\([^)]+\)/g);
+                        
+                        if (printlnInLoop && printlnInLoop.length > 0) {
+                            loopOutputGenerated = true;
+                            
+                            // Process each println in the loop
+                            printlnInLoop.forEach(printStmt => {
+                                const printContent = printStmt.match(/\(([^)]+)\)/);
+                                if (printContent) {
+                                    const content = printContent[1];
+                                    
+                                    // Extract array variable name from the println content (e.g., arr[i])
+                                    // This is more reliable than parsing the loop header
+                                    const arrMatch = content.match(/(\w+)\s*\[\s*\w+\s*\]/);
+                                    let arrVarName = null;
+                                    if (arrMatch) {
+                                        arrVarName = arrMatch[1];
+                                    } else {
+                                        // Fallback: try to extract from loop header - handle both < and <=
+                                        const loopVarMatch = loopBlock.match(/for\s*\([^)]*(\w+)\s*=\s*\d+\s*;\s*\1\s*[<<=]\s*(\w+)\.length/);
+                                        if (loopVarMatch) {
+                                            arrVarName = loopVarMatch[2];
+                                        }
                                     }
-                                });
-                            } else if (Object.keys(arr.values).length > 0) {
-                                // Handle object-based values (from individual assignments)
-                                for (let key in arr.values) {
-                                    const idx = parseInt(key);
-                                    if (!isNaN(idx) && arr.values[key] !== undefined) {
-                                        result.output.push(`${arr.name}[${idx}] = ${arr.values[key]}`);
+                                    
+                                    if (arrVarName) {
+                                        const arrDecl = result.arrayDeclarations.find(a => a.name === arrVarName);
+                                        // Check if array exists and has values
+                                        if (arrDecl) {
+                                            // Get array length - handle both array and object-based values
+                                            let arrayLength = 0;
+                                            let valuesArray = [];
+                                            
+                                            if (arrDecl.values) {
+                                                if (Array.isArray(arrDecl.values)) {
+                                                    arrayLength = arrDecl.values.length;
+                                                    valuesArray = arrDecl.values;
+                                                } else if (typeof arrDecl.values === 'object') {
+                                                    const keys = Object.keys(arrDecl.values).map(k => parseInt(k)).filter(k => !isNaN(k));
+                                                    if (keys.length > 0) {
+                                                        arrayLength = Math.max(...keys) + 1;
+                                                        valuesArray = new Array(arrayLength);
+                                                        for (let key in arrDecl.values) {
+                                                            const idx = parseInt(key);
+                                                            if (!isNaN(idx)) {
+                                                                valuesArray[idx] = arrDecl.values[key];
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            } else if (arrDecl.size) {
+                                                // Array declared but not initialized
+                                                arrayLength = arrDecl.size;
+                                                valuesArray = new Array(arrayLength);
+                                            }
+                                            
+                                            if (arrayLength > 0) {
+                                                // Detect reverse loop: check for i-- and i >= 0 or i = arr.length-1 pattern
+                                                const hasDecrement = loopBlock.includes('--');
+                                                const hasGreaterEqual = loopBlock.match(/\w+\s*>=\s*\d+/);
+                                                const startsFromLength = loopBlock.match(/\w+\s*=\s*\w+\.length\s*-\s*\d+/);
+                                                
+                                                const isReverseLoop = hasDecrement && (hasGreaterEqual || startsFromLength);
+                                                
+                                                // Check if loop uses <= instead of < (for forward) or >= (for reverse)
+                                                const usesLessThanOrEqual = loopBlock.includes('<=');
+                                                const usesGreaterThanOrEqual = loopBlock.includes('>=');
+                                                
+                                                // Process the println format
+                                                let errorOccurred = false;
+                                                
+                                                // Create array of indices to iterate in correct order
+                                                const indices = [];
+                                                
+                                                if (isReverseLoop) {
+                                                    // Reverse loop: iterate from length-1 down to 0
+                                                    // Extract start value (e.g., arr.length-1)
+                                                    let startValue = arrayLength - 1;
+                                                    const startMatch = loopBlock.match(/\w+\s*=\s*(\w+)\.length\s*-\s*(\d+)/);
+                                                    if (startMatch) {
+                                                        const subtractValue = parseInt(startMatch[2]) || 0;
+                                                        startValue = arrayLength - subtractValue;
+                                                    }
+                                                    
+                                                    // Extract end condition
+                                                    let endValue = -1; // Default: >= 0 means go to -1
+                                                    if (usesGreaterThanOrEqual) {
+                                                        const endMatch = loopBlock.match(/\w+\s*>=\s*(\d+)/);
+                                                        if (endMatch) {
+                                                            endValue = parseInt(endMatch[1]) - 1;
+                                                        }
+                                                    } else {
+                                                        // > 0 means go to 0
+                                                        const endMatch = loopBlock.match(/\w+\s*>\s*(\d+)/);
+                                                        if (endMatch) {
+                                                            endValue = parseInt(endMatch[1]);
+                                                        }
+                                                    }
+                                                    
+                                                    // Generate indices in reverse order
+                                                    for (let i = startValue; i > endValue; i--) {
+                                                        indices.push(i);
+                                                    }
+                                                } else {
+                                                    // Forward loop: iterate from 0 to length-1
+                                                    let endValue = arrayLength - 1;
+                                                    if (usesLessThanOrEqual) {
+                                                        endValue = arrayLength; // <= length means include length (but will check bounds)
+                                                    }
+                                                    
+                                                    // Generate indices in forward order
+                                                    for (let i = 0; i <= endValue; i++) {
+                                                        indices.push(i);
+                                                    }
+                                                }
+                                                
+                                                indices.forEach(idx => {
+                                                    if (errorOccurred) return;
+                                                    
+                                                    // Check for out-of-bounds access
+                                                    if (idx < 0 || idx >= arrayLength) {
+                                                        const errorMsg = language === 'java' 
+                                                            ? `IndexOutOfBoundsException: Index ${idx} out of bounds for length ${arrayLength}`
+                                                            : `RangeError: Index ${idx} out of bounds for length ${arrayLength}`;
+                                                        result.error = errorMsg;
+                                                        result.output.push(language === 'java' 
+                                                            ? `Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index ${idx} out of bounds for length ${arrayLength}`
+                                                            : `RangeError: Index ${idx} out of bounds for length ${arrayLength}`);
+                                                        errorOccurred = true;
+                                                        return;
+                                                    }
+                                                    
+                                                    const val = valuesArray[idx];
+                                                    // Build output by replacing array access with actual value
+                                                    let finalOutput = '';
+                                                    const parts = content.split(/\s*\+\s*/);
+                                                    parts.forEach(part => {
+                                                        part = part.trim();
+                                                        const arrAccessMatch = part.match(/(\w+)\s*\[\s*\w+\s*\]/);
+                                                        if (arrAccessMatch && arrAccessMatch[1] === arrVarName) {
+                                                            // Replace arr[i] with actual value
+                                                            // Handle undefined, null, 0, and empty string cases
+                                                            if (val !== undefined) {
+                                                                finalOutput += String(val);
+                                                            }
+                                                        } else {
+                                                            // This is a string literal
+                                                            const cleaned = part.replace(/^["']|["']$/g, '').replace(/`/g, '');
+                                                            finalOutput += cleaned;
+                                                        }
+                                                    });
+                                                    // Always push output (even if empty, to show the format string)
+                                                    result.output.push(finalOutput);
+                                                });
+                                            } else {
+                                                // Array exists but has no elements - still process format string
+                                                let finalOutput = '';
+                                                const parts = content.split(/\s*\+\s*/);
+                                                parts.forEach(part => {
+                                                    part = part.trim();
+                                                    const arrAccessMatch = part.match(/(\w+)\s*\[\s*\w+\s*\]/);
+                                                    if (!arrAccessMatch || arrAccessMatch[1] !== arrVarName) {
+                                                        // This is a string literal
+                                                        const cleaned = part.replace(/^["']|["']$/g, '').replace(/`/g, '');
+                                                        finalOutput += cleaned;
+                                                    }
+                                                });
+                                                if (finalOutput.trim() !== '') {
+                                                    result.output.push(finalOutput);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    
+                    // Only generate default output if no println was found in loops
+                    if (!loopOutputGenerated) {
+                        result.arrayDeclarations.forEach(arr => {
+                            if (arr.values) {
+                                if (Array.isArray(arr.values)) {
+                                    arr.values.forEach((val, idx) => {
+                                        if (val !== undefined) {
+                                            result.output.push(`${arr.name}[${idx}] = ${val}`);
+                                        }
+                                    });
+                                } else if (Object.keys(arr.values).length > 0) {
+                                    for (let key in arr.values) {
+                                        const idx = parseInt(key);
+                                        if (!isNaN(idx) && arr.values[key] !== undefined) {
+                                            result.output.push(`${arr.name}[${idx}] = ${arr.values[key]}`);
+                                        }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
                 
             } catch (error) {
@@ -790,10 +1609,9 @@ arr.forEach((value, index) => {
                 this.capacity = 0; // Start with 0 capacity - empty array
                 this.size = 0;
                 this.data = []; // Initialize data array
-                this.showMemory = false;
-                this.showDetails = false;
                 this.language = 'javascript'; // 'java' or 'javascript'
                 this.errorMessage = null;
+                this.arrays = []; // Store multiple arrays: [{name, type, size, capacity, data, language}, ...]
             }
 
             getOperations() {
@@ -828,13 +1646,11 @@ arr.forEach((value, index) => {
                 if (op === 'add' && values.length > 0) {
                     if (this.language === 'java') {
                         // Java: Handle batch input - create array of size needed
-                        const indexInput = document.getElementById('inputIndex');
-                        const indexValue = indexInput ? indexInput.value.trim() : '';
-                        const index = indexValue === '' ? null : parseInt(indexValue);
+                        const index = null; // No index input available
                         
                         // If multiple values provided OR single value with no index (batch mode)
                         // OR if index is explicitly null/empty, treat as batch add
-                        if (values.length > 1 || (index === null && indexValue === '')) {
+                        if (values.length > 1 || index === null) {
                             // For batch add: calculate total size needed
                             const totalSizeNeeded = this.size + values.length;
                             
@@ -847,18 +1663,10 @@ arr.forEach((value, index) => {
                             if (this.size === 0) {
                                 // Empty array: create exact size for all values
                                 this.capacity = values.length;
-                                const sizeInput = document.getElementById('arraySize');
-                                if (sizeInput) {
-                                    sizeInput.value = this.capacity;
-                                }
                                 this.data = new Array(this.capacity);
                             } else if (totalSizeNeeded > this.capacity) {
                                 // Array has data: resize to fit existing + new values
                                 this.capacity = totalSizeNeeded;
-                                const sizeInput = document.getElementById('arraySize');
-                                if (sizeInput) {
-                                    sizeInput.value = this.capacity;
-                                }
                                 
                                 // Resize array and copy existing data
                                 const newData = new Array(this.capacity);
@@ -873,6 +1681,7 @@ arr.forEach((value, index) => {
                                 const targetIndex = this.size + idx;
                                 if (targetIndex >= this.capacity) {
                                     this.errorMessage = `IndexOutOfBoundsException: Cannot add ${values.length} values. Array capacity is ${this.capacity}, need ${totalSizeNeeded}`;
+                                    displayTerminalError(this.errorMessage);
                                     this.render();
                                     return;
                                 }
@@ -886,6 +1695,7 @@ arr.forEach((value, index) => {
                                 // If no index specified, add at end
                                 if (this.size >= this.capacity) {
                                     this.errorMessage = `IndexOutOfBoundsException: Array is full (capacity: ${this.capacity}). Please increase array size.`;
+                                    displayTerminalError(this.errorMessage);
                                     this.render();
                                     return;
                                 }
@@ -894,6 +1704,7 @@ arr.forEach((value, index) => {
                             } else {
                                 if (index < 0 || index >= this.capacity) {
                                     this.errorMessage = `IndexOutOfBoundsException: Index ${index} out of bounds for length ${this.capacity}`;
+                                    displayTerminalError(this.errorMessage);
                                     this.render();
                                     return;
                                 }
@@ -927,6 +1738,7 @@ arr.forEach((value, index) => {
                     if (this.language === 'java') {
                         if (index < 0 || index >= this.capacity) {
                             this.errorMessage = `IndexOutOfBoundsException: Index ${index} out of bounds for length ${this.capacity}`;
+                            displayTerminalError(this.errorMessage);
                             this.render();
                             return;
                         }
@@ -951,10 +1763,7 @@ arr.forEach((value, index) => {
                     this.size = 0;
                     if (this.language === 'java') {
                         // Reset to original capacity for Java
-                        const sizeInput = document.getElementById('arraySize');
-                        if (sizeInput) {
-                            this.capacity = parseInt(sizeInput.value) || 10;
-                        }
+                        this.capacity = 10;
                         this.data = new Array(this.capacity);
                     } else {
                         this.data = [];
@@ -964,142 +1773,165 @@ arr.forEach((value, index) => {
                 this.render();
             }
 
-            onLanguageChange() {
-                const langSelect = document.getElementById('languageType');
-                this.language = langSelect.value;
-                
-                const sizeGroup = document.getElementById('arraySizeGroup');
-                const inputGroupJava = document.getElementById('inputGroupJava');
-                const inputValueLabel = document.getElementById('inputValueLabel');
-                
-                if (this.language === 'java') {
-                    sizeGroup.style.display = 'block';
-                    inputGroupJava.style.display = 'block';
-                    inputValueLabel.textContent = 'Value (comma/space/newline separated)';
-                    const inputHint = document.getElementById('inputHint');
-                    if (inputHint) {
-                        inputHint.textContent = 'Enter multiple values (e.g., 1,2,3,4,5,6) - array will auto-size';
-                    }
-                    // Set capacity from size input
-                    const sizeInput = document.getElementById('arraySize');
-                    if (sizeInput) {
-                        const newCapacity = parseInt(sizeInput.value) || 10;
-                        // Preserve existing data if possible
-                        const oldData = this.data || [];
-                        this.capacity = newCapacity;
-                        this.data = new Array(this.capacity);
-                        // Copy existing data up to new capacity
-                        for (let i = 0; i < Math.min(this.size, this.capacity); i++) {
-                            this.data[i] = oldData[i];
-                        }
-                        // Adjust size if capacity was reduced
-                        if (this.size > this.capacity) {
-                            this.size = this.capacity;
-                        }
-                    }
-                } else {
-                    sizeGroup.style.display = 'none';
-                    inputGroupJava.style.display = 'none';
-                    inputValueLabel.textContent = 'Value (comma/space/newline separated)';
-                    const inputHint = document.getElementById('inputHint');
-                    if (inputHint) {
-                        inputHint.textContent = 'Enter multiple values separated by commas';
-                    }
-                    // Reset for JavaScript dynamic array - keep existing data but allow growth
-                    if (this.size > this.capacity) {
-                        this.capacity = Math.ceil(this.size * 1.5);
-                        const newData = new Array(this.capacity);
-                        for (let i = 0; i < this.size; i++) {
-                            newData[i] = this.data[i];
-                        }
-                        this.data = newData;
-                    }
-                }
-                
-                this.errorMessage = null;
-                this.render();
-                this.renderComplexitySection();
-                setupOperations();
-                
-                // Update code editor language
-                if (typeof updateCodeEditorLanguage === 'function') {
-                    updateCodeEditorLanguage(this.language);
-                }
-            }
-
-            setArraySize() {
-                const sizeInput = document.getElementById('arraySize');
-                if (sizeInput && this.language === 'java') {
-                    const newSize = parseInt(sizeInput.value) || 10;
-                    if (newSize < this.size) {
-                        this.errorMessage = `Cannot reduce size. Current size: ${this.size}`;
-                    } else {
-                        this.capacity = newSize;
-                        const newData = new Array(this.capacity);
-                        for (let i = 0; i < this.size; i++) {
-                            newData[i] = this.data[i];
-                        }
-                        this.data = newData;
-                        this.errorMessage = null;
-                    }
-                    this.render();
-                }
-            }
-
-            toggleMemoryView() {
-                this.showMemory = document.getElementById('showMemory').checked;
-                this.render();
-            }
-
-            toggleDetails() {
-                this.showDetails = document.getElementById('showDetails').checked;
-                this.render();
-            }
 
             render() {
                 const container = document.getElementById('visualization');
-                const arrayType = this.language === 'java' ? 'Static Array (Java)' : 'Dynamic Array (JavaScript)';
-                const description = this.language === 'java' 
-                    ? 'Fixed-size array as in Java. Enter multiple values (e.g., 1,2,3,4,5,6) to auto-create array of that size. Or specify index to add at specific position. IndexOutOfBoundsException if accessing invalid indices.'
-                    : 'Dynamic array as in JavaScript. Automatically grows when needed. Elements added at the end. Enter multiple values (e.g., 1,2,3,4,5,6) to add them all at once.';
                 
-                container.innerHTML = `
-                    <div class="description">
-                        <strong>${arrayType}:</strong> ${description}
-                        ${this.showDetails ? `<br>Size: ${this.size}, Capacity: ${this.capacity}` : ''}
-                    </div>
-                    ${this.errorMessage ? `<div style="background: var(--danger); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-weight: 600;">
-                        ⚠️ ${this.errorMessage}
-                    </div>` : ''}
-                    <div class="array-container" id="arrayViz"></div>
-                    ${this.showMemory ? this.renderMemoryView(['Base address: 0x1000', `Element size: 8 bytes`, `Total memory: ${this.capacity * 8} bytes`]) : ''}
-                `;
-
-                const vizContainer = document.getElementById('arrayViz');
-                vizContainer.innerHTML = '';
-                
-                // Only show cells if capacity > 0
-                if (this.capacity > 0) {
-                    for (let i = 0; i < this.capacity; i++) {
-                        const cell = document.createElement('div');
-                        cell.className = 'array-cell';
-                        if (i < this.size) {
-                            cell.classList.add('active');
-                        }
-                        if (this.searchValue && this.data[i] === this.searchValue) {
-                            cell.classList.add('highlight');
-                        }
-                        cell.innerHTML = `
-                            <span class="index">${i}</span>
-                            <span class="value">${this.data[i] !== undefined ? this.data[i] : '∅'}</span>
-                            ${this.showMemory ? `<span class="memory-addr">0x${(1000 + i * 8).toString(16)}</span>` : ''}
-                        `;
-                        vizContainer.appendChild(cell);
+                // If we have arrays from code parsing, render all of them
+                if (this.arrays && this.arrays.length > 0) {
+                    let html = '';
+                    
+                    if (this.errorMessage) {
+                        html += `<div style="background: var(--danger); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-weight: 600;">
+                            ⚠️ ${this.errorMessage}
+                        </div>`;
                     }
+                    
+                    // Render each array
+                    this.arrays.forEach((arr, index) => {
+                        const arrayType = arr.language === 'java' ? 'Static Array (Java)' : 'Dynamic Array (JavaScript)';
+                        const is2D = arr.dimensions === 2;
+                        html += `
+                            <div class="array-visualization-group">
+                                <div class="array-header">
+                                    <h3>${arr.name} <span class="array-type-badge">${arr.type}${is2D ? '[][]' : '[]'}</span></h3>
+                                </div>
+                                <div class="${is2D ? 'array-2d-container' : 'array-container'}" id="arrayViz-${index}"></div>
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = html;
+                    
+                    // Render each array's cells
+                    this.arrays.forEach((arr, index) => {
+                        const vizContainer = document.getElementById(`arrayViz-${index}`);
+                        if (!vizContainer) return;
+                        
+                        vizContainer.innerHTML = '';
+                        
+                        if (arr.dimensions === 2) {
+                            // Render 2D array as grid
+                            if (arr.rows > 0 && arr.cols > 0) {
+                                const table = document.createElement('table');
+                                table.className = 'array-2d-table';
+                                
+                                // Create header row with column indices
+                                const headerRow = document.createElement('tr');
+                                headerRow.appendChild(document.createElement('th')); // Empty corner cell
+                                for (let col = 0; col < arr.cols; col++) {
+                                    const th = document.createElement('th');
+                                    th.textContent = col;
+                                    th.className = 'col-index';
+                                    headerRow.appendChild(th);
+                                }
+                                table.appendChild(headerRow);
+                                
+                                // Create data rows
+                                for (let row = 0; row < arr.rows; row++) {
+                                    const tr = document.createElement('tr');
+                                    
+                                    // Row index header
+                                    const rowHeader = document.createElement('th');
+                                    rowHeader.textContent = row;
+                                    rowHeader.className = 'row-index';
+                                    tr.appendChild(rowHeader);
+                                    
+                                    // Data cells
+                                    for (let col = 0; col < arr.cols; col++) {
+                                        const td = document.createElement('td');
+                                        td.className = 'array-2d-cell';
+                                        
+                                        const rowData = arr.data[row];
+                                        const val = rowData && col < rowData.length ? rowData[col] : undefined;
+                                        
+                                        if (val !== undefined && val !== null) {
+                                            td.classList.add('active');
+                                            td.textContent = val;
+                                        } else {
+                                            td.textContent = '∅';
+                                        }
+                                        
+                                        if (this.searchValue && val === this.searchValue) {
+                                            td.classList.add('highlight');
+                                        }
+                                        
+                                        tr.appendChild(td);
+                                    }
+                                    table.appendChild(tr);
+                                }
+                                
+                                vizContainer.appendChild(table);
+                            } else {
+                                vizContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-light); font-style: italic;">Empty 2D array</div>';
+                            }
+                        } else {
+                            // Render 1D array
+                            if (arr.capacity > 0) {
+                                for (let i = 0; i < arr.capacity; i++) {
+                                    const cell = document.createElement('div');
+                                    cell.className = 'array-cell';
+                                    if (i < arr.size) {
+                                        cell.classList.add('active');
+                                    }
+                                    if (this.searchValue && arr.data[i] === this.searchValue) {
+                                        cell.classList.add('highlight');
+                                    }
+                                    cell.innerHTML = `
+                                        <span class="index">${i}</span>
+                                        <span class="value">${arr.data[i] !== undefined ? arr.data[i] : '∅'}</span>
+                                    `;
+                                    vizContainer.appendChild(cell);
+                                }
+                            } else {
+                                vizContainer.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-light); font-style: italic;">Empty array</div>';
+                            }
+                        }
+                    });
                 } else {
-                    // Show empty message if array is empty
-                    vizContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light); font-style: italic;">Array is empty. Run code to visualize array.</div>';
+                    // Fallback to single array visualization (for manual operations)
+                    const arrayType = this.language === 'java' ? 'Static Array (Java)' : 'Dynamic Array (JavaScript)';
+                    const description = this.language === 'java' 
+                        ? 'Fixed-size array as in Java. Enter multiple values (e.g., 1,2,3,4,5,6) to auto-create array of that size. Or specify index to add at specific position. IndexOutOfBoundsException if accessing invalid indices.'
+                        : 'Dynamic array as in JavaScript. Automatically grows when needed. Elements added at the end. Enter multiple values (e.g., 1,2,3,4,5,6) to add them all at once.';
+                    
+                    container.innerHTML = `
+                        <div class="description">
+                            <strong>${arrayType}:</strong> ${description}
+                        </div>
+                        ${this.errorMessage ? `<div style="background: var(--danger); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-weight: 600;">
+                            ⚠️ ${this.errorMessage}
+                        </div>` : ''}
+                        <div class="array-container" id="arrayViz"></div>
+                    `;
+
+                    const vizContainer = document.getElementById('arrayViz');
+                    if (vizContainer) {
+                        vizContainer.innerHTML = '';
+                        
+                        if (this.capacity > 0) {
+                            for (let i = 0; i < this.capacity; i++) {
+                                const cell = document.createElement('div');
+                                cell.className = 'array-cell';
+                                if (i < this.size) {
+                                    cell.classList.add('active');
+                                }
+                                if (this.searchValue && this.data[i] === this.searchValue) {
+                                    cell.classList.add('highlight');
+                                }
+                                cell.innerHTML = `
+                                    <span class="index">${i}</span>
+                                    <span class="value">${this.data[i] !== undefined ? this.data[i] : '∅'}</span>
+                                    ${this.showMemory ? `<span class="memory-addr">0x${(1000 + i * 8).toString(16)}</span>` : ''}
+                                `;
+                                vizContainer.appendChild(cell);
+                            }
+                        } else {
+                            vizContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-light); font-style: italic;">Array is empty. Run code to visualize array.</div>';
+                        }
+                    }
                 }
+                
                 this.searchValue = null;
                 
                 // Render time complexity section separately (below code editor)
@@ -1121,71 +1953,9 @@ arr.forEach((value, index) => {
 
         const visualizer = new ArrayVisualizer();
 
-        // Setup operations
-        function setupOperations() {
-            const opsContainer = document.getElementById('operations');
-            if (!opsContainer) {
-                console.error('Operations container not found');
-                return;
-            }
-            opsContainer.innerHTML = '';
-            visualizer.getOperations().forEach(op => {
-                const btn = document.createElement('button');
-                btn.className = `btn btn-${op.type || 'primary'}`;
-                btn.textContent = op.label;
-                btn.onclick = () => {
-                    const inputValue = document.getElementById('inputValue');
-                    if (!inputValue) return;
-                    
-                    const values = parseInput(inputValue.value, document.getElementById('dataType').value);
-                    if (values.length === 0 && !['clear'].includes(op.name)) {
-                        alert('Please enter a value');
-                        return;
-                    }
-                    visualizer.executeOperation(op.name, values);
-                };
-                opsContainer.appendChild(btn);
-            });
-        }
-
         // Initial render to show empty array state
         // visualizer.render() will update after running default code from editor
         visualizer.render();
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.body.setAttribute('data-theme', savedTheme);
-            updateThemeButton();
-            // Setup operations first
-            setupOperations();
-            setupExamples();
-            // Initialize language mode (this will also call setupOperations again)
-            visualizer.onLanguageChange();
-        });
-
-        function setupExamples() {
-            const examplesContainer = document.getElementById('examples');
-            examplesContainer.innerHTML = '';
-            visualizer.getExamples().forEach(example => {
-                const btn = document.createElement('button');
-                btn.className = 'example-btn';
-                btn.textContent = example.label;
-                btn.onclick = () => {
-                    document.getElementById('inputValue').value = example.data.join(',');
-                    // Clear index input for batch add
-                    const indexInput = document.getElementById('inputIndex');
-                    if (indexInput) {
-                        indexInput.value = '';
-                    }
-                };
-                examplesContainer.appendChild(btn);
-            });
-        }
-
-
-        setupOperations();
-        setupExamples();
 
         // Theme toggle
         function toggleTheme() {
@@ -1210,8 +1980,10 @@ arr.forEach((value, index) => {
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.body.setAttribute('data-theme', savedTheme);
             updateThemeButton();
-            // Initialize language mode
-            visualizer.onLanguageChange();
+            // Set default language
+            if (visualizer) {
+                visualizer.language = 'java';
+            }
         });
     </script>
 </body>

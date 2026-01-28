@@ -110,8 +110,12 @@ body {
 
 .main-content {
     display: grid;
-    grid-template-columns: 350px 1fr;
+    grid-template-columns: 1fr;
     gap: 20px;
+}
+
+.main-content.control-panel-hidden {
+    grid-template-columns: 1fr;
 }
 
 @media (max-width: 1200px) {
@@ -349,6 +353,52 @@ body {
 }
 
 /* Array Visualization */
+.array-visualization-group {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 2px solid var(--border);
+}
+
+.array-visualization-group:last-child {
+    margin-bottom: 0;
+}
+
+.array-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border);
+}
+
+.array-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.array-type-badge {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    background: var(--primary);
+    color: white;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.array-details {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
 .array-container {
     display: flex;
     flex-wrap: wrap;
@@ -412,6 +462,69 @@ body {
     position: absolute;
     bottom: 4px;
     right: 4px;
+}
+
+/* 2D Array Visualization */
+.array-2d-container {
+    padding: 20px;
+    overflow-x: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.array-2d-table {
+    border-collapse: collapse;
+    margin: 0 auto;
+    background: var(--surface);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px var(--shadow);
+}
+
+.array-2d-table th {
+    background: var(--primary);
+    color: white;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.array-2d-table th.row-index,
+.array-2d-table th.col-index {
+    background: var(--primary-dark);
+    min-width: 40px;
+}
+
+.array-2d-table td {
+    border: 2px solid var(--border);
+    padding: 12px 16px;
+    text-align: center;
+    background: var(--node-bg);
+    color: var(--text);
+    font-weight: 500;
+    min-width: 60px;
+    transition: all 0.2s;
+}
+
+.array-2d-table td.active {
+    background: var(--node-active);
+    border-color: var(--primary);
+}
+
+.array-2d-table td.highlight {
+    background: var(--node-highlight);
+    border-color: var(--warning);
+    transform: scale(1.05);
+}
+
+.array-2d-table tr:hover td {
+    background: var(--bg);
+}
+
+.array-2d-table tr:hover td.active {
+    background: var(--node-active);
 }
 
 /* LinkedList Visualization */
@@ -768,13 +881,142 @@ body {
     color: var(--primary);
 }
 
-/* Code Editor Section */
-.code-editor-section {
+/* Code Editor and Terminal Wrapper */
+.code-terminal-wrapper {
+    display: flex;
+    gap: 20px;
     margin-top: 30px;
+}
+
+.code-editor-section {
+    flex: 0 0 70%;
     background: var(--surface);
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 4px 6px var(--shadow);
+}
+
+.terminal-section {
+    flex: 0 0 30%;
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 0;
+    box-shadow: 0 4px 6px var(--shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.terminal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #1e1e1e;
+    border-bottom: 1px solid #333;
+    border-radius: 12px 12px 0 0;
+}
+
+.terminal-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.terminal-icon {
+    font-size: 1rem;
+}
+
+.terminal-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.terminal-font-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    min-width: 32px;
+}
+
+.terminal-font-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.terminal-clear-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.terminal-clear-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.terminal {
+    flex: 1;
+    background: #000000;
+    color: #00ff00;
+    font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    padding: 16px;
+    overflow-y: auto;
+    height: 400px;
+    border-radius: 0 0 12px 12px;
+}
+
+.terminal:empty::before {
+    content: 'No output yet. Run your code to see System.out.println output here.';
+    color: #666;
+    font-style: italic;
+}
+
+.terminal-line {
+    margin-bottom: 4px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.terminal-line:last-child {
+    margin-bottom: 0;
+}
+
+.terminal-error {
+    color: #ff4444 !important;
+    font-weight: 600;
+}
+
+.terminal-error::before {
+    content: "❌ ";
+    color: #ff4444;
+}
+
+@media (max-width: 1200px) {
+    .code-terminal-wrapper {
+        flex-direction: column;
+    }
+    
+    .code-editor-section,
+    .terminal-section {
+        flex: 1 1 100%;
+    }
 }
 
 /* Complexity Section (below code editor) */
@@ -796,6 +1038,54 @@ body {
     font-weight: 600;
     color: var(--text);
     margin: 0;
+}
+
+/* Language Tabs */
+.language-tabs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.language-tab {
+    padding: 8px 16px;
+    background: var(--node-bg);
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    transition: all 0.2s;
+    border-bottom: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.language-tab:hover {
+    background: var(--bg);
+    color: var(--text);
+}
+
+.language-tab.active {
+    background: var(--surface);
+    border-color: var(--primary);
+    color: var(--primary);
+    border-bottom-color: var(--surface);
+    position: relative;
+    z-index: 1;
+}
+
+.code-editor-tabs-content {
+    position: relative;
+}
+
+.code-editor-tab-pane {
+    display: none;
+}
+
+.code-editor-tab-pane.active {
+    display: block;
 }
 
 .monaco-editor-container {
