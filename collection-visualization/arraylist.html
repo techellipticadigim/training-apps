@@ -13,11 +13,70 @@
         <div class="header">
             <a href="index.html" class="back-link">← Back to Index</a>
             <h1>📝 ArrayList</h1>
-            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <label class="view-checkbox-label" style="margin: 0;">
+                    <input type="checkbox" id="uiViewToggle" onchange="toggleControlPanel()">
+                    <span>UI view</span>
+                </label>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+            </div>
         </div>
 
-        <div class="main-content">
-            <div class="control-panel">
+        <div class="main-content control-panel-hidden">
+            <div class="visualization-area">
+                <div class="view-options-bar">
+                    <div class="view-checkboxes">
+                        <label class="view-checkbox-label">
+                            <input type="checkbox" id="logicalView" checked onchange="visualizer.toggleLogicalView()">
+                            <span>Logical View</span>
+                        </label>
+                        <label class="view-checkbox-label">
+                            <input type="checkbox" id="internalMemoryView" onchange="visualizer.toggleInternalMemoryView()">
+                            <span>Internal Memory View</span>
+                        </label>
+                    </div>
+                </div>
+                <div id="visualization"></div>
+                
+                <div class="code-terminal-wrapper" id="codeEditorWrapper">
+                    <div class="code-editor-section">
+                        <div class="code-editor-header">
+                            <div class="language-tabs">
+                                <button class="language-tab active" data-language="java" onclick="switchLanguageTab('java')">
+                                    ☕ Java
+                                </button>
+                                <!-- Future tabs can be added here -->
+                            </div>
+                            <button class="btn btn-primary" onclick="runCode()">▶ Run Code</button>
+                        </div>
+                        <div class="code-editor-tabs-content">
+                            <div class="code-editor-tab-pane active" id="tab-java">
+                                <div id="javaCodeEditor" class="monaco-editor-container"></div>
+                            </div>
+                            <!-- Future tab panes can be added here -->
+                        </div>
+                        <div id="codeOutput" class="code-output"></div>
+                    </div>
+                    
+                    <div class="terminal-section">
+                        <div class="terminal-header">
+                            <div class="terminal-title">
+                                <span class="terminal-icon">💻</span>
+                                <span>Terminal</span>
+                            </div>
+                            <div class="terminal-controls">
+                                <button class="terminal-font-btn" onclick="decreaseTerminalFont()" title="Decrease Font Size">A-</button>
+                                <button class="terminal-font-btn" onclick="increaseTerminalFont()" title="Increase Font Size">A+</button>
+                                <button class="terminal-clear-btn" onclick="clearTerminal()" title="Clear Terminal">🗑️</button>
+                            </div>
+                        </div>
+                        <div id="terminal" class="terminal"></div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="control-panel" id="controlPanel" style="display: none;">
                 <div class="control-group">
                     <h3>Language / Array Type</h3>
                     <div class="input-group">
@@ -88,33 +147,8 @@
                     </div>
                 </div>
             </div>
-
-            <div class="visualization-area">
-                <div class="view-options-bar">
-                    <div class="view-checkboxes">
-                        <label class="view-checkbox-label">
-                            <input type="checkbox" id="logicalView" checked onchange="visualizer.toggleLogicalView()">
-                            <span>Logical View</span>
-                        </label>
-                        <label class="view-checkbox-label">
-                            <input type="checkbox" id="internalMemoryView" onchange="visualizer.toggleInternalMemoryView()">
-                            <span>Internal Memory View</span>
-                        </label>
-                    </div>
-                </div>
-                <div id="visualization"></div>
-                
-                <div class="code-editor-section">
-                    <div class="code-editor-header">
-                        <h3 id="codeEditorTitle">📝 Java Code Editor</h3>
-                        <button class="btn btn-primary" onclick="runCode()">▶ Run Code</button>
-                    </div>
-                    <div id="codeEditor" class="monaco-editor-container"></div>
-                    <div id="codeOutput" class="code-output"></div>
-                </div>
-                
-                <div id="complexitySection" class="complexity-section"></div>
-            </div>
+            
+            <div id="complexitySection" class="complexity-section"></div>
         </div>
     </div>
 
@@ -122,7 +156,8 @@
     <!-- Monaco Editor JS -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.min.js"></script>
     <script>
-        let codeEditor = null;
+        let editors = {}; // Store editors for each language
+        let currentLanguage = 'java'; // Current active language tab
         
         // Initialize Monaco Editor after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
@@ -131,14 +166,52 @@
             
             // Initialize Monaco Editor
             require(['vs/editor/editor.main'], function () {
-                const editorElement = document.getElementById('codeEditor');
+                initializeEditor('java');
+                
+                // Update editor theme when page theme changes
+                const observer = new MutationObserver(() => {
+                    Object.values(editors).forEach(editor => {
+                        if (editor) {
+                            const theme = document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs';
+                            monaco.editor.setTheme(theme);
+                        }
+                    });
+                });
+                observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
+                
+                // Initialize terminal
+                const terminal = document.getElementById('terminal');
+                if (terminal) {
+                    const savedFontSize = localStorage.getItem('terminalFontSize');
+                    if (savedFontSize) {
+                        terminal.style.fontSize = savedFontSize + 'px';
+                    }
+                    terminal.innerHTML = '<div class="terminal-line" style="color: #666; font-style: italic;">No output yet. Run your code to see System.out.println output here.</div>';
+                }
+                
+                // Run the default code once after editor is initialized
+                setTimeout(() => {
+                    if (typeof runCode === 'function' && editors['java']) {
+                        if (visualizer) {
+                            visualizer.language = 'java';
+                        }
+                        runCode();
+                    }
+                }, 800);
+            });
+            
+            // Function to initialize editor for a specific language
+            function initializeEditor(language) {
+                const editorId = language + 'CodeEditor';
+                const editorElement = document.getElementById(editorId);
                 if (!editorElement) {
-                    console.error('Code editor element not found');
+                    console.error(`Code editor element not found for ${language}`);
                     return;
                 }
                 
-                codeEditor = monaco.editor.create(editorElement, {
-                    value: `// Write your Java ArrayList code here
+                // Default code templates for each language
+                const codeTemplates = {
+                    java: `// Write your Java ArrayList code here
 import java.util.ArrayList;
 
 public class ArrayListDemo {
@@ -161,8 +234,12 @@ public class ArrayListDemo {
             System.out.println("list[" + i + "] = " + list.get(i));
         }
     }
-}`,
-                    language: 'java',
+}`
+                };
+                
+                const editor = monaco.editor.create(editorElement, {
+                    value: codeTemplates[language] || '',
+                    language: language === 'java' ? 'java' : 'javascript',
                     theme: document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs',
                     automaticLayout: true,
                     fontSize: 14,
@@ -173,12 +250,14 @@ public class ArrayListDemo {
                     formatOnType: true
                 });
                 
+                editors[language] = editor;
+                
                 // Add Enter key listener to run code automatically
                 let lastRunTime = 0;
                 const RUN_DEBOUNCE_MS = 800;
                 let runTimeout = null;
                 
-                codeEditor.onKeyDown(function(e) {
+                editor.onKeyDown(function(e) {
                     if (e.keyCode === monaco.KeyCode.Enter && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
                         if (runTimeout) {
                             clearTimeout(runTimeout);
@@ -193,45 +272,119 @@ public class ArrayListDemo {
                     }
                 });
                 
-                codeEditor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
+                editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, function() {
                     if (runTimeout) {
                         clearTimeout(runTimeout);
                     }
                     runCode();
                 }, 'runCodeCtrl');
+            }
+            
+            // Function to switch language tabs
+            window.switchLanguageTab = function(language) {
+                currentLanguage = language;
                 
-                // Update editor theme when page theme changes
-                const observer = new MutationObserver(() => {
-                    if (codeEditor) {
-                        const theme = document.body.getAttribute('data-theme') === 'dark' ? 'vs-dark' : 'vs';
-                        monaco.editor.setTheme(theme);
+                // Update tab buttons
+                document.querySelectorAll('.language-tab').forEach(tab => {
+                    if (tab.dataset.language === language) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
                     }
                 });
-                observer.observe(document.body, { attributes: true, attributeFilter: ['data-theme'] });
                 
-                // Run the default code once after editor is initialized
-                setTimeout(() => {
-                    if (typeof runCode === 'function' && codeEditor) {
-                        const langSelect = document.getElementById('languageType');
-                        if (langSelect && visualizer) {
-                            visualizer.language = langSelect.value;
-                        }
-                        runCode();
+                // Update tab panes
+                document.querySelectorAll('.code-editor-tab-pane').forEach(pane => {
+                    if (pane.id === 'tab-' + language) {
+                        pane.classList.add('active');
+                    } else {
+                        pane.classList.remove('active');
                     }
-                }, 800);
-            });
+                });
+                
+                // Update editor layout
+                Object.values(editors).forEach(editor => {
+                    if (editor) {
+                        editor.layout();
+                    }
+                });
+            };
         });
+        
+        // Terminal functions
+        window.displayTerminalOutput = function(outputs) {
+            const terminal = document.getElementById('terminal');
+            if (!terminal) return;
+            
+            const placeholder = terminal.querySelector('.terminal-line[style*="color: #666"]');
+            if (placeholder) {
+                placeholder.remove();
+            }
+            
+            if (outputs && outputs.length > 0) {
+                outputs.forEach(output => {
+                    const line = document.createElement('div');
+                    const isError = output.includes('Exception') || 
+                                   output.includes('IndexOutOfBoundsException') || 
+                                   output.includes('RangeError') ||
+                                   output.includes('Error:');
+                    line.className = isError ? 'terminal-line terminal-error' : 'terminal-line';
+                    line.textContent = output;
+                    terminal.appendChild(line);
+                });
+                terminal.scrollTop = terminal.scrollHeight;
+            } else {
+                if (terminal.children.length === 0) {
+                    terminal.innerHTML = '<div class="terminal-line" style="color: #666; font-style: italic;">No output yet. Run your code to see System.out.println output here.</div>';
+                }
+            }
+        };
+        
+        window.displayTerminalError = function(errorMessage) {
+            const terminal = document.getElementById('terminal');
+            if (!terminal) return;
+            
+            const placeholder = terminal.querySelector('.terminal-line[style*="color: #666"]');
+            if (placeholder) {
+                placeholder.remove();
+            }
+            
+            const errorLine = document.createElement('div');
+            errorLine.className = 'terminal-line terminal-error';
+            errorLine.textContent = errorMessage;
+            terminal.appendChild(errorLine);
+            terminal.scrollTop = terminal.scrollHeight;
+        };
+        
+        window.clearTerminal = function() {
+            const terminal = document.getElementById('terminal');
+            if (terminal) {
+                terminal.innerHTML = '';
+                terminal.innerHTML = '<div class="terminal-line" style="color: #666; font-style: italic;">No output yet. Run your code to see System.out.println output here.</div>';
+            }
+        };
+        
+        window.increaseTerminalFont = function() {
+            const terminal = document.getElementById('terminal');
+            if (!terminal) return;
+            const currentSize = parseInt(getComputedStyle(terminal).fontSize) || 13;
+            const newSize = Math.min(currentSize + 2, 24);
+            terminal.style.fontSize = newSize + 'px';
+            localStorage.setItem('terminalFontSize', newSize);
+        };
+        
+        window.decreaseTerminalFont = function() {
+            const terminal = document.getElementById('terminal');
+            if (!terminal) return;
+            const currentSize = parseInt(getComputedStyle(terminal).fontSize) || 13;
+            const newSize = Math.max(currentSize - 2, 10);
+            terminal.style.fontSize = newSize + 'px';
+            localStorage.setItem('terminalFontSize', newSize);
+        };
         
         // Function to update code editor language and example code
         function updateCodeEditorLanguage(language) {
-            if (!codeEditor) return;
-            
-            const editorTitle = document.getElementById('codeEditorTitle');
-            if (editorTitle) {
-                editorTitle.textContent = language === 'java' ? '📝 Java Code Editor' : '📝 JavaScript Code Editor';
-            }
-            
-            monaco.editor.setModelLanguage(codeEditor.getModel(), language === 'java' ? 'java' : 'javascript');
+            switchLanguageTab(language);
             
             const javaCode = `// Write your Java ArrayList code here
 import java.util.ArrayList;
@@ -282,11 +435,13 @@ list.forEach((value, index) => {
     console.log(\`list[\${index}] = \${value}\`);
 });`;
 
-            const currentCode = codeEditor.getValue();
-            if (currentCode.trim() === '' || 
-                currentCode.includes('Write your Java ArrayList code here') || 
-                currentCode.includes('Write your JavaScript array code here')) {
-                codeEditor.setValue(language === 'java' ? javaCode : javascriptCode);
+            if (editors[language]) {
+                const currentCode = editors[language].getValue();
+                if (currentCode.trim() === '' || 
+                    currentCode.includes('Write your Java ArrayList code here') || 
+                    currentCode.includes('Write your JavaScript array code here')) {
+                    editors[language].setValue(language === 'java' ? javaCode : javascriptCode);
+                }
             }
         }
         
@@ -297,19 +452,20 @@ list.forEach((value, index) => {
                 visualizer.operationInfo = null;
             }
             
-            if (!codeEditor) {
+            if (!editors[currentLanguage]) {
                 alert('Code editor is not ready yet. Please wait a moment.');
                 return;
             }
             
-            const code = codeEditor.getValue();
+            clearTerminal();
+            const code = editors[currentLanguage].getValue();
             const outputDiv = document.getElementById('codeOutput');
-            const currentLanguage = visualizer.language || 'java';
+            const lang = visualizer.language || currentLanguage;
             
             outputDiv.innerHTML = '<div class="code-output-header">Output:</div>';
             
             try {
-                const arrayInfo = parseCode(code, currentLanguage);
+                const arrayInfo = parseCode(code, lang);
                 
                 if (arrayInfo.error) {
                     outputDiv.innerHTML += `<div class="error-message">❌ ${arrayInfo.error}</div>`;
@@ -1169,6 +1325,30 @@ list.forEach((value, index) => {
         setupOperations();
         setupExamples();
 
+        function toggleControlPanel() {
+            const checkbox = document.getElementById('uiViewToggle');
+            const controlPanel = document.getElementById('controlPanel');
+            const codeEditorWrapper = document.getElementById('codeEditorWrapper');
+            const mainContent = document.querySelector('.main-content');
+            if (checkbox && controlPanel && mainContent) {
+                if (checkbox.checked) {
+                    // Show control panel, hide code editor
+                    controlPanel.style.display = 'flex';
+                    mainContent.classList.remove('control-panel-hidden');
+                    if (codeEditorWrapper) {
+                        codeEditorWrapper.style.display = 'none';
+                    }
+                } else {
+                    // Hide control panel, show code editor
+                    controlPanel.style.display = 'none';
+                    mainContent.classList.add('control-panel-hidden');
+                    if (codeEditorWrapper) {
+                        codeEditorWrapper.style.display = 'flex';
+                    }
+                }
+            }
+        }
+
         function toggleTheme() {
             const currentTheme = document.body.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -1204,6 +1384,13 @@ list.forEach((value, index) => {
             visualizer.onLanguageChange();
         });
     </script>
+    
+    <footer class="powered-by-footer">
+        <span>Powered By</span>
+        <a href="https://techelliptica.com" target="_blank" rel="noopener noreferrer">
+            <img src="https://techelliptica.com/images/logo.png" alt="TechElliptica Logo">
+        </a>
+    </footer>
 </body>
 </html>
 

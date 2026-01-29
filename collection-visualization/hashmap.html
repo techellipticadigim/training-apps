@@ -11,11 +11,17 @@
         <div class="header">
             <a href="index.html" class="back-link">← Back to Index</a>
             <h1>🗺️ HashMap</h1>
-            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <label class="view-checkbox-label" style="margin: 0;">
+                    <input type="checkbox" id="uiViewToggle" onchange="toggleControlPanel()">
+                    <span>UI view</span>
+                </label>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+            </div>
         </div>
 
-        <div class="main-content">
-            <div class="control-panel">
+        <div class="main-content control-panel-hidden">
+            <div class="control-panel" id="controlPanel" style="display: none;">
                 <div class="control-group">
                     <h3>Input</h3>
                     <div class="input-group">
@@ -301,6 +307,21 @@ class HashMap {
         setupOperations();
         setupExamples();
 
+        function toggleControlPanel() {
+            const checkbox = document.getElementById('uiViewToggle');
+            const controlPanel = document.getElementById('controlPanel');
+            const mainContent = document.querySelector('.main-content');
+            if (checkbox && controlPanel && mainContent) {
+                if (checkbox.checked) {
+                    controlPanel.style.display = 'flex';
+                    mainContent.classList.remove('control-panel-hidden');
+                } else {
+                    controlPanel.style.display = 'none';
+                    mainContent.classList.add('control-panel-hidden');
+                }
+            }
+        }
+
         function toggleTheme() {
             const currentTheme = document.body.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -324,6 +345,13 @@ class HashMap {
             updateThemeButton();
         });
     </script>
+    
+    <footer class="powered-by-footer">
+        <span>Powered By</span>
+        <a href="https://techelliptica.com" target="_blank" rel="noopener noreferrer">
+            <img src="https://techelliptica.com/images/logo.png" alt="TechElliptica Logo">
+        </a>
+    </footer>
 </body>
 </html>
 

@@ -9,12 +9,22 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 Collection Visualization</h1>
-            <p class="subtitle">Interactive Educational Tool for Learning Data Structures</p>
+            <div class="header-left">
+                <h1>📊 Collection Visualization</h1>
+                <p class="subtitle">Interactive Educational Tool for Learning Data Structures</p>
+            </div>
+            <div class="header-right">
+                <div class="powered-by-header">
+                    <span>Powered By</span>
+                    <a href="https://techelliptica.com" target="_blank" rel="noopener noreferrer">
+                        <img src="https://techelliptica.com/images/logo.png" alt="TechElliptica Logo">
+                    </a>
+                </div>
+            </div>
         </div>
 
         <div class="intro-section">
-            <p>Explore how common data structures work internally. Each visualization shows memory layout, operations, and algorithmic steps with animations.</p>
+            <p id="typing-text"></p>
         </div>
 
         <div class="data-structures-grid">
@@ -157,97 +167,433 @@
     </div>
 
     <style>
+        /* Override border colors for index page */
+        .header {
+            border-bottom: 1px solid #E5E5E5;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .header {
+            animation: fadeInUp 0.6s ease-out;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .header h1 {
+            animation: fadeIn 0.8s ease-out;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 4px;
+            font-weight: 400;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .powered-by-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .powered-by-header:hover {
+            opacity: 0.8;
+        }
+
+        .powered-by-header span {
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+
+        .powered-by-header img {
+            height: 24px;
+            width: auto;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .powered-by-header:hover img {
+            opacity: 1;
+        }
+
+        .powered-by-header a {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
         .intro-section {
             background: var(--surface);
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px var(--shadow);
+            border: 1px solid #E5E5E5;
+            border-radius: 3px;
+            padding: 32px;
+            margin-bottom: 40px;
+            box-shadow: none;
             text-align: center;
             color: var(--text-light);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            position: relative;
+            overflow: hidden;
+            min-height: 60px;
+        }
+
+        #typing-text {
+            font-size: 18px;
+            line-height: 1.6;
+            min-height: 1.6em;
+        }
+
+        .intro-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
         }
 
         .data-structures-grid {
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 32px;
         }
 
         .ds-category {
             background: var(--surface);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 6px var(--shadow);
+            border: 1px solid #E5E5E5;
+            border-radius: 3px;
+            padding: 28px;
+            box-shadow: none;
+            animation: fadeInUp 0.8s ease-out both;
         }
 
+        .ds-category:nth-child(1) { animation-delay: 0.1s; }
+        .ds-category:nth-child(2) { animation-delay: 0.2s; }
+        .ds-category:nth-child(3) { animation-delay: 0.3s; }
+        .ds-category:nth-child(4) { animation-delay: 0.4s; }
+        .ds-category:nth-child(5) { animation-delay: 0.5s; }
+        .ds-category:nth-child(6) { animation-delay: 0.6s; }
+
         .ds-category h2 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            color: var(--text);
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 10px;
+            font-size: 1.25rem;
+            margin-bottom: 24px;
+            color: var(--primary);
+            border-bottom: 1px solid #E5E5E5;
+            padding-bottom: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: slideInLeft 0.6s ease-out;
         }
 
         .ds-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
         .ds-card {
-            background: var(--node-bg);
-            border: 2px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
+            background: var(--surface);
+            border: 1px solid #E5E5E5;
+            border-radius: 3px;
+            padding: 28px;
             text-decoration: none;
             color: var(--text);
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out both;
+        }
+
+        .ds-card:nth-child(1) { animation-delay: 0.1s; }
+        .ds-card:nth-child(2) { animation-delay: 0.15s; }
+        .ds-card:nth-child(3) { animation-delay: 0.2s; }
+        .ds-card:nth-child(4) { animation-delay: 0.25s; }
+
+        .ds-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
         }
 
         .ds-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 16px var(--shadow);
+            transform: translateY(-6px);
             border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(65, 105, 225, 0.15);
+        }
+
+        .ds-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .ds-card:hover .ds-icon {
+            animation: pulse 0.6s ease-in-out;
         }
 
         .ds-icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+            transition: transform 0.3s ease;
+            filter: grayscale(0.2);
+        }
+
+        .ds-card:hover .ds-icon {
+            transform: scale(1.1);
+            filter: grayscale(0);
         }
 
         .ds-card h3 {
             font-size: 1.25rem;
-            margin-bottom: 8px;
-            color: var(--text);
+            margin-bottom: 10px;
+            color: var(--primary);
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .ds-card:hover h3 {
+            color: var(--primary-dark);
         }
 
         .ds-card p {
             font-size: 0.9rem;
             color: var(--text-light);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
             flex-grow: 1;
+            line-height: 1.6;
         }
 
         .ds-badge {
             display: inline-block;
             background: var(--primary);
             color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.8rem;
+            padding: 6px 14px;
+            border-radius: 3px;
+            font-size: 0.75rem;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+
+        .ds-card:hover .ds-badge {
+            background: var(--primary-dark);
+            transform: scale(1.05);
         }
 
         .footer {
             text-align: center;
-            padding: 30px;
+            padding: 40px 20px;
             color: var(--text-light);
-            margin-top: 40px;
+            margin-top: 60px;
+            animation: fadeIn 1s ease-out 0.8s both;
+        }
+
+        @media (max-width: 768px) {
+            .ds-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .intro-section {
+                padding: 24px;
+            }
         }
     </style>
+    
+
+    <script>
+        // Typing effect for intro text
+        function typeText(element, text, speed = 50) {
+            let i = 0;
+            element.textContent = '';
+            
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                } else {
+                    // Add blinking cursor after typing completes
+                    const cursor = document.createElement('span');
+                    cursor.className = 'typing-cursor';
+                    cursor.textContent = '|';
+                    element.appendChild(cursor);
+                    
+                    // Remove cursor after a delay
+                    setTimeout(() => {
+                        cursor.remove();
+                    }, 1000);
+                }
+            }
+            
+            type();
+        }
+
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe all cards for scroll animations
+        document.addEventListener('DOMContentLoaded', () => {
+            // Start typing effect
+            const typingText = document.getElementById('typing-text');
+            const introText = 'Explore how common data structures work internally. Each visualization shows memory layout, operations, and algorithmic steps with animations.';
+            
+            // Wait for intro section animation to start
+            setTimeout(() => {
+                typeText(typingText, introText, 30);
+            }, 1000);
+
+            const cards = document.querySelectorAll('.ds-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+                observer.observe(card);
+            });
+
+            // Add ripple effect on card click
+            cards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.style.position = 'absolute';
+                    ripple.style.borderRadius = '50%';
+                    ripple.style.background = 'rgba(255, 107, 107, 0.3)';
+                    ripple.style.transform = 'scale(0)';
+                    ripple.style.animation = 'ripple 0.6s ease-out';
+                    ripple.style.pointerEvents = 'none';
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+        });
+
+        // Add ripple animation and typing cursor animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+            
+            @keyframes blink {
+                0%, 50% {
+                    opacity: 1;
+                }
+                51%, 100% {
+                    opacity: 0;
+                }
+            }
+            
+            .typing-cursor {
+                display: inline-block;
+                animation: blink 1s infinite;
+                color: var(--primary);
+                font-weight: bold;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
